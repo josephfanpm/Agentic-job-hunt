@@ -30,6 +30,10 @@ I built this for my own search as a Senior Product Manager. Anyone can reuse it:
 
 ## Setup
 
+**New here? Read the [step-by-step guide](GUIDE.md):** one-time setup, the daily 20-minute routine, the weekly review, and running two agents at once.
+
+Quick version:
+
 1. **Clone this repo**, then copy `examples/profile.example.md` to `private/profile.md` and fill it in. `private/` is git-ignored.
 2. **Connect Google Sheets** to each agent (for Claude: the Google Sheets connector).
 3. **Create the sheet.** Ask either agent: *"Run prompts/create-sheet.md."* It builds the tabs from [sheet/schema.json](sheet/schema.json) and returns the link. Save the sheet ID in `private/profile.md`.
