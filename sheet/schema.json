@@ -1,0 +1,72 @@
+{
+  "title": "Job search",
+  "header_color": [0.1216, 0.2196, 0.3882],
+  "tabs": [
+    {
+      "name": "Daily jobs",
+      "frozen_rows": 1,
+      "columns": [
+        {"name": "Applied", "width": 70, "type": "checkbox", "owner": "user"},
+        {"name": "Scanned", "width": 95, "type": "date", "owner": "scan"},
+        {"name": "Rank", "width": 50, "owner": "scan"},
+        {"name": "Company", "width": 140, "owner": "scan"},
+        {"name": "Role", "width": 220, "owner": "scan"},
+        {"name": "Pay", "width": 150, "owner": "scan"},
+        {"name": "Location", "width": 150, "owner": "scan"},
+        {"name": "Work type", "width": 90, "owner": "scan"},
+        {"name": "Posted", "width": 95, "type": "date", "owner": "scan"},
+        {"name": "Hiring manager", "width": 180, "owner": "any"},
+        {"name": "Message", "width": 300, "owner": "any"},
+        {"name": "Why it fits", "width": 280, "owner": "scan"},
+        {"name": "Link", "width": 110, "owner": "scan"},
+        {"name": "Resume", "width": 200, "owner": "any"},
+        {"name": "Cover letter", "width": 200, "owner": "any"},
+        {"name": "Notes", "width": 200, "owner": "any"},
+        {"name": "LinkedIn search", "width": 420, "owner": "scan"}
+      ]
+    },
+    {
+      "name": "Applied",
+      "frozen_rows": 1,
+      "columns": [
+        {"name": "Applied date", "width": 95, "type": "date", "owner": "any"},
+        {"name": "Company", "width": 140, "owner": "any"},
+        {"name": "Role", "width": 220, "owner": "any"},
+        {"name": "Pay", "width": 150, "owner": "any"},
+        {"name": "Location", "width": 150, "owner": "any"},
+        {"name": "Status", "width": 130, "owner": "any",
+         "dropdown": ["Applied", "Referral requested", "Recruiter screen", "Interviewing", "Offer", "Rejected", "Withdrawn", "No response"]},
+        {"name": "Contacts messaged", "width": 220, "owner": "any"},
+        {"name": "Follow up on", "width": 95, "type": "date", "owner": "any"},
+        {"name": "Resume sent", "width": 200, "owner": "any"},
+        {"name": "Notes", "width": 250, "owner": "any"},
+        {"name": "Link", "width": 110, "owner": "any"},
+        {"name": "Channel", "width": 170, "owner": "any",
+         "dropdown": ["Referral", "Hiring manager message", "Cold application", "Auto-apply"]}
+      ]
+    },
+    {
+      "name": "Network",
+      "frozen_rows": 1,
+      "columns": [
+        {"name": "Score", "width": 55, "owner": "any"},
+        {"name": "Category", "width": 150, "owner": "any"},
+        {"name": "Name", "width": 150, "owner": "any"},
+        {"name": "Company", "width": 140, "owner": "any"},
+        {"name": "Title", "width": 200, "owner": "any"},
+        {"name": "Why they fit", "width": 260, "owner": "any"},
+        {"name": "Suggested opener", "width": 300, "owner": "any"},
+        {"name": "Past messages", "width": 90, "owner": "any"},
+        {"name": "LinkedIn", "width": 110, "owner": "any"},
+        {"name": "Status", "width": 120, "owner": "user",
+         "dropdown": ["To message", "Draft ready", "Messaged", "Replied", "Call booked", "Referral asked", "Referred", "No reply", "Not now"]},
+        {"name": "Target job", "width": 200, "owner": "any"},
+        {"name": "Messaged on", "width": 95, "type": "date", "owner": "user"},
+        {"name": "Follow up on", "width": 95, "type": "date", "owner": "any",
+         "formula": "=IF(L{row}=\"\",\"\",L{row}+7)"},
+        {"name": "Draft message", "width": 320, "owner": "any"},
+        {"name": "Notes", "width": 220, "owner": "any"}
+      ]
+    }
+  ]
+}

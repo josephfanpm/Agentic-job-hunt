@@ -1,0 +1,11 @@
+# Personal data never leaves your machine
+private/
+*.pdf
+*.csv
+Connections*
+messages*
+*.aux
+*.log
+*.out
+__pycache__/
+.env
