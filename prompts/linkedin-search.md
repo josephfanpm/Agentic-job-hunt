@@ -15,11 +15,11 @@ Put every OR group in parentheses, before or between the ANDs. Never use a bare 
 - `<company>`: the name in quotes if it has a space (`"CVS Health"`), bare if it doesn't (`DoorDash`). Use `(Brand OR Parent)` when both names appear.
 - `<team>`: 2–3 words from the job title or posting, as one OR group, such as `(merchant OR marketplace OR consumer)`. Leave it out at small companies, or when the title doesn't name a team.
 - **Large companies:** add `AND (product OR tech OR technical)` to the recruiter search, so it finds tech recruiters rather than warehouse or retail hiring.
-- **Other functions:** change the hiring manager titles to fit, for example `("engineering manager" OR "director of engineering")`.
+- **Other functions:** the hiring manager titles follow your job title. A software engineer gets `("director of engineering" OR "engineering manager" ...)`. Set `linkedin.manager_titles` in your config to choose your own.
 
 ## In the sheet
 
-Each cell holds three lines: `Recruiters: …`, `Hiring managers: …`, `Peers: …`. Each line links to `https://www.linkedin.com/search/results/people/?keywords=<url-encoded search>`. Build the cells with `scripts/linkedin_search.py`, which computes the link positions for you.
+Each cell holds three lines: `Recruiters: …`, `Hiring managers: …`, `Peers: …`. Each line links to `https://www.linkedin.com/search/results/people/?keywords=<url-encoded search>`. The scan fills this cell for every new job. For any other job, run `python -m jobhunt people "Company" "Job title"`.
 
 ## Tips for the user
 

@@ -1,0 +1,36 @@
+{
+  "mode": "lean",
+  "tracker": "csv",
+  "titles": {
+    "include": ["product manager"],
+    "exclude": ["intern", "associate", "director", "principal", "staff", "group", "vp", "head", "marketing"]
+  },
+  "keywords": {
+    "boost": ["marketplace", "healthcare", "onboarding", "growth", "experimentation"],
+    "require_any": [],
+    "exclude": []
+  },
+  "locations": {"countries": ["US", "CA"], "remote": true, "remote_only": false, "prefer": ["Toronto"]},
+  "pay": {"floor": 100000, "target": 160000},
+  "max_age_days": 7,
+  "max_results": 25,
+  "max_per_company": 5,
+  "priority_companies": ["Acme"],
+  "big_companies": ["Acme"],
+  "companies": {
+    "greenhouse": [{"slug": "acmeusa", "name": "Acme"}],
+    "lever": [],
+    "ashby": [],
+    "workable": []
+  },
+  "sources": {
+    "remoteok": true,
+    "remotive": true,
+    "weworkremotely": ["remote-product-jobs"],
+    "himalayas": true,
+    "hackernews": true,
+    "amazon": false,
+    "jobspy": false
+  },
+  "linkedin": {"manager_titles": [], "peer_titles": []}
+}

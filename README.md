@@ -1,71 +1,101 @@
 # agentic-job-hunt
 
-A job search run by two AI agents and one human. The agents find roles, tailor resumes, draft outreach and submit applications. The human picks the jobs, sends the messages and does the interviews.
+A job search run by scripts, AI agents and one human. Scripts find and rank the jobs. Agents tailor resumes, draft outreach and prepare applications. You pick the jobs, send the messages and do the interviews.
 
-I built this for my own search as a Senior Product Manager. Anyone can reuse it: swap in your own resume, targets and pay floor.
+It works for any role: set your job titles in one config file. You choose how much the AI does, from almost nothing to nearly everything.
+
+```bash
+git clone https://github.com/josephfanpm/agentic-job-hunt.git && cd agentic-job-hunt
+pip install -r requirements.txt
+python -m jobhunt init --resume path/to/your-resume.pdf    # asks a few questions
+python -m jobhunt scan                                     # today's ranked jobs
+```
 
 ## What it does
 
-| Stage | What happens | Who |
+| Stage | What happens | Needs AI? |
 |---|---|---|
-| **1. Set up** | Creates the Google Sheet the whole system runs on: tabs, columns, dropdowns and checkboxes | Claude or Muse |
-| **2. Scan** | A daily scheduled run pulls new roles from LinkedIn, Indeed, Glassdoor, ZipRecruiter and company job boards, filters them to your targets, ranks them and adds them to the sheet | Claude or Muse |
-| **3. Find people** | Writes three LinkedIn Boolean searches per job (recruiters, hiring managers, peers), each a one-click link | Claude or Muse |
-| **4. Mine your network** | Scores every LinkedIn connection 1–5 against your goal and drafts an opener for each strong match | Claude |
-| **5. Tailor** | Builds a one-page LaTeX resume and cover letter per job from the real job description, then checks the PDF for ATS problems | Claude or Muse |
-| **6. Reach out** | Drafts a referral or hiring-manager message that fits the person reading it | Claude or Muse drafts, **you send** |
-| **7. Apply** | Fills and submits the application, then logs it in the Applied tab with the channel used | Claude or Muse |
-| **8. Interview** | Builds a story bank and practice plan from your resume and the job description | Claude |
+| **Set up** | One command drafts your profile from your resume, finds your target companies' job boards, and creates the tracker | No |
+| **Scan** | Reads company job boards (Greenhouse, Lever, Ashby, Workable), remote boards (Remote OK, Remotive, We Work Remotely, Himalayas), Hacker News "Who is hiring?", Amazon, and optionally LinkedIn and Indeed. Filters, ranks and removes duplicates | No |
+| **Find people** | Three LinkedIn searches per job (recruiters, hiring managers, peers), each a one-click link | No |
+| **Check the resume** | Reads your PDF the way an applicant tracking system does, and shows which of the posting's terms your resume lacks | No |
+| **Track** | Logs applications, lists follow-ups due, compares interview rates by channel | No |
+| **Evaluate and research** | Grades a job's fit against your profile; writes a one-page company brief | Yes |
+| **Tailor** | A one-page LaTeX resume and cover letter per job, from the real job description and your own facts | Yes |
+| **Reach out** | A message matched to who's reading it. Agents draft; **you send** | Yes |
+| **Apply** | Fills the application and logs it. Stops for referrals and sponsorship questions | Yes |
+| **Interview** | A story bank, a mock interview with a tough-interviewer setting, and a debrief | Yes |
+| **Offer** | Side-by-side comparison and a negotiation draft | Yes |
 
-**Both agents can do every automated step**: create the sheet, scan, tailor, and auto-apply. They share one sheet and follow one contract ([AGENTS.md](AGENTS.md)), so they never overwrite each other's work. Run either one alone, or both side by side.
+## Choose your flow
+
+| Flow | The AI does | Pick it if |
+|---|---|---|
+| **Lean** | Only what you ask, for jobs you pick | You want the lowest AI usage |
+| **Standard** | Reviews the scan, tailors and drafts for jobs you pick | You want a balance |
+| **Full** | Evaluates every new job and prepares applications ahead | You want the least work |
+
+```bash
+python -m jobhunt mode lean      # or standard, full
+```
+
+In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](MODES.md) has the full comparison.
+
+## Commands
+
+| Command | Does |
+|---|---|
+| `python -m jobhunt init` | Set up your private folder, profile, config and tracker |
+| `python -m jobhunt scan` | Find, filter and rank new jobs (`--dry-run` to preview) |
+| `python -m jobhunt boards add "Company"` | Find and track a company's job board |
+| `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers |
+| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap |
+| `python -m jobhunt applied "Company" --channel Referral` | Log an application |
+| `python -m jobhunt due` | Follow-ups due today |
+| `python -m jobhunt stats` | Interviews by channel |
+| `python -m jobhunt mode` | Show or change the flow |
+| `python -m jobhunt doctor` | Check the setup |
+
+## Works with more than one agent
+
+Claude and Muse (or any two agents) can share one tracker: both can create the Google Sheet, run the scan, tailor and apply. They follow one contract ([AGENTS.md](AGENTS.md)), so they never overwrite each other's work. Any agent that can run a command and edit a sheet can join.
 
 ## The rules that make it work
 
-- **You pick, agents execute.** The scan gives you a short ranked list. You tick the jobs you want, and the agents do the rest.
-- **Referral before application.** For big companies, line up a referral first. Apply cold only where the fit is strong. The Applied tab records the channel for each application (Referral, Hiring manager message, Cold application, Auto-apply), so you can see which one actually gets interviews.
-- **Message a person for every application.** Each job gets a short, specific message to someone on that team.
-- **Never invent anything.** Agents tailor only from a job description they actually fetched, and only with facts and numbers from your own files. Titles, dates, employers, tools and metrics never get made up.
-- **Agents draft, you send.** No message goes out under your name without you.
-- **Ask before sponsorship answers.** Work-authorization questions go to you.
+- **You pick, agents execute.** The scan gives you a short ranked list. You choose; agents do the rest.
+- **Referral before application.** Line up a referral first where you can. The tracker records the channel for every application, so you can see which one gets interviews.
+- **Message a person for every application.**
+- **Never invent anything.** Agents tailor only from a job description they fetched and facts in your own files. Pay, dates and locations are shown only when the posting states them.
+- **Agents draft, you send.**
+- **Your data stays yours.** Everything personal lives in `private/`, which is never committed.
 
-## Setup
+## Guides
 
-**New here? Read the [step-by-step guide](GUIDE.md):** one-time setup, the daily 20-minute routine, the weekly review, and running two agents at once.
+- **[GUIDE.md](GUIDE.md):** setup, the daily routine, the weekly review
+- **[MODES.md](MODES.md):** the three flows and what each costs
+- **[AGENTS.md](AGENTS.md):** the contract every agent follows
+- **Prompts:**
+  - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md)
+  - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md)
+  - Applying: [tailor-resume](prompts/tailor-resume.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
+  - Interviews and offers: [interview-prep](prompts/interview-prep.md), [mock-interview](prompts/mock-interview.md), [offer](prompts/offer.md), [review](prompts/review.md)
 
-Quick version:
+## Development
 
-1. **Clone this repo**, then copy `examples/profile.example.md` to `private/profile.md` and fill it in. `private/` is git-ignored.
-2. **Connect Google Sheets** to each agent (for Claude: the Google Sheets connector).
-3. **Create the sheet.** Ask either agent: *"Run prompts/create-sheet.md."* It builds the tabs from [sheet/schema.json](sheet/schema.json) and returns the link. Save the sheet ID in `private/profile.md`.
-4. **Schedule the scan.** Fill in the placeholders in [prompts/daily-scan.md](prompts/daily-scan.md) and run it once a day: a Claude Code routine, cron, or Muse's scheduler.
-5. **Build your base resume** from [resume/template.tex](resume/template.tex) and compile it with [Tectonic](https://tectonic-typesetting.github.io/): `tectonic resume.tex`.
-6. **Optional:** pair it with [career-ops](https://github.com/santifer/career-ops) for portal scanning, job evaluation and interview tooling.
+```bash
+pip install -r requirements.txt
+python -m pytest -q
+```
 
-## Prompts
-
-| File | Use it to |
-|---|---|
-| [create-sheet.md](prompts/create-sheet.md) | Build the tracking sheet from the schema |
-| [daily-scan.md](prompts/daily-scan.md) | Run the scheduled daily scan |
-| [linkedin-search.md](prompts/linkedin-search.md) | Write Boolean people searches for a job |
-| [network-scoring.md](prompts/network-scoring.md) | Score your LinkedIn connections export |
-| [outreach.md](prompts/outreach.md) | Draft the right message for a recruiter, hiring manager or peer |
-| [tailor-resume.md](prompts/tailor-resume.md) | Tailor the resume and cover letter to one job |
-| [apply.md](prompts/apply.md) | Submit an application and log it |
-| [interview-prep.md](prompts/interview-prep.md) | Prepare for a screen or a loop |
-
-## Scripts
-
-- `scripts/build_sheet_requests.py`: turns `sheet/schema.json` into one Google Sheets `batchUpdate`, so agents never hand-type formatting requests.
-- `scripts/linkedin_search.py`: builds the LinkedIn search cells, with a clickable link on each line.
-- `scripts/check_pdf.py`: checks a compiled resume: one page, no fused ligatures that break ATS keyword matching, and no lines that wrap with 1–3 orphan words.
+The scan engine uses only the Python standard library. `pymupdf` is needed for the resume check. Tests run without network access.
 
 ## Credits
 
-- [career-ops](https://github.com/santifer/career-ops) by Santiago Fernández de Valderrama (MIT): the scanning and evaluation engine this sits beside.
+- [career-ops](https://github.com/santifer/career-ops) by Santiago Fernández de Valderrama (MIT): the project that inspired this workflow.
 - [Jake's Resume](https://github.com/jakegut/resume) (MIT): the LaTeX layout.
 - Resume advice from [Diego Granados](https://www.linkedin.com/in/diegogranadosa/): no generic skills list; graduation year only.
-- Networking method from Mikelle's [UNLISTED](https://mikellecareers.com) networking guide: mine your warm network first, then go cold with Boolean search and a message matched to the reader.
+- Networking method from Mikelle's [UNLISTED](https://mikellecareers.com) networking guide.
+- Job data comes from each board's public feed. Listings from Remote OK and Remotive link back to those sites, as their terms ask.
 
 ## License
 

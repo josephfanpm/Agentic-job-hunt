@@ -2,9 +2,10 @@
 
 ## Before writing
 
-1. **Fetch the real job description** and save it. Greenhouse (`boards-api.greenhouse.io/v1/boards/<board>/jobs/<id>`), Ashby (`api.ashbyhq.com/posting-api/job-board/<org>`) and Lever all have public APIs. If you can't fetch it, stop: never tailor from a guess or a remembered description.
-2. **Look up the company's tools**: check this posting and the company's other postings for their stack.
-3. **Read `private/profile.md`**: experience, wins, metrics, and approved bullets.
+1. **Get the real job description.** The scan saves one per job in `private/jds/`. If it isn't there, fetch the posting and save it. If you can't, stop: never tailor from a guess or a remembered description.
+2. **See the gap:** `python -m jobhunt check private/resume.pdf --jd <jd file>` lists the posting's most-used terms that the base resume lacks. Treat it as a list of things to check against the profile, not a list of words to add.
+3. **Look up the company's tools** in this posting and its other postings.
+4. **Read `private/profile.md`:** experience, wins, metrics and approved bullets.
 
 ## Resume rules
 
@@ -21,14 +22,14 @@
 
 ```
 tectonic resume.tex
-python scripts/check_pdf.py resume.pdf
+python -m jobhunt check resume.pdf --jd <jd file>
 ```
 
-The check fails if the PDF runs past one page, has fused ligatures, or has a line that wraps with only 1–3 words. Fused ligatures turn "staffing" into "sta?ing" for an ATS, so the keyword never matches. Fix every failure and recompile.
+The check reads the PDF the way an applicant tracking system does. It fails if the PDF runs past one page, has fused letters, has no email in its text, or has a line that wraps with only 1–3 words. Fused letters turn "staffing" into "sta?ing", so the keyword never matches. It warns about missing section headings, multi-column layouts and images. Fix every failure and recompile.
 
 ## Cover letter
 
-Write one only if the form accepts it. Keep it to three short paragraphs: why this team (one specific detail), two results that match the job, and a close. Run the same checks.
+Write one only if the form accepts it. Keep it to three short paragraphs: why this team (one specific detail), two results that match the job, and a close. Check it with `python -m jobhunt check letter.pdf --letter`.
 
 ## Save
 
