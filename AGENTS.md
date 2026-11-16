@@ -37,7 +37,7 @@ Every job, application and contact lives in the tracker, built from [sheet/schem
 5. **Never invent** pay, dates, locations, employers, titles, tools or metrics. Leave the cell empty instead.
 6. **Draft messages, never send them.** Put drafts in the tracker. The user sends them.
 7. **Ask the user** before answering sponsorship or work-authorization questions, and before submitting where a referral is possible.
-8. **Log every application** the same day: date, company, role, pay, location, status, resume sent, link and Channel.
+8. **Log every application** the same day: date, company, role, pay, location, status, resume sent, link and Channel. Then take the job off Daily jobs: that list holds only jobs not yet applied to, and the Applied tab is the record. With the sheet receiver installed, ticking Applied does this automatically.
 9. **Send script output unchanged.** When a script prepares a sheet update, pass it along as it is. Never hand-type batch requests; hand-typed batches shift rows.
 10. **Save files with ATS-friendly names:** `First_Last_Resume_Company.pdf` and `First_Last_Cover_Letter_Company.pdf`. Use underscores; no dates or version numbers.
 11. **Never try to get around a captcha, login wall or rate limit.** Hand the job back to the user.

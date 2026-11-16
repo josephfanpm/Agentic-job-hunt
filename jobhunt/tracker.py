@@ -86,13 +86,13 @@ def find_job(home: Path, query: str) -> list[dict]:
 def mark_applied(home: Path, company: str, role: str, *, channel: str = "Cold application",
                  resume: str = "", contacts: str = "", notes: str = "",
                  today: dt.date | None = None, follow_up_days: int = 7) -> dict:
-    """Tick the job in Daily jobs and log it in Applied with a follow-up date."""
+    """Log the job in Applied with a follow-up date, and take it off the daily list."""
     today = today or dt.date.today()
     daily = read(home, "Daily jobs")
     source = next((r for r in daily if _same(r, company, role)), None)
     if source:
-        source["Applied"] = "TRUE"
-        write(home, "Daily jobs", daily)
+        # The Applied tracker is the record from here on; the daily list keeps only open jobs
+        write(home, "Daily jobs", [r for r in daily if r is not source])
     applied = read(home, "Applied")
     if any(_same(r, company, role) for r in applied):
         raise ValueError(f"{company} / {role} is already in the Applied tracker")

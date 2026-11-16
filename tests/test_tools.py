@@ -123,7 +123,7 @@ def test_tracker_round_trip(tmp_path):
     row = tracker.mark_applied(tmp_path, "jobber", "Sr Product Manager, New Starts",
                                channel="Referral", today=TODAY)
     assert row["Follow up on"] == "2026-11-22" and row["Pay"] == "CAD 145,900–197,400"
-    assert tracker.read(tmp_path, "Daily jobs")[0]["Applied"] == "TRUE"
+    assert [r["Company"] for r in tracker.read(tmp_path, "Daily jobs")] == ["Acme", "Old Co"]
     with pytest.raises(ValueError):
         tracker.mark_applied(tmp_path, "Jobber", "Senior Product Manager, New Starts", today=TODAY)
 

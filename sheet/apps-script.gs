@@ -12,11 +12,19 @@
  *   - inserts the rest directly under the header, newest on top, so rows
  *     another agent wrote are never reordered or overwritten
  *   - fills columns by header name, so extra columns (another agent's) are left blank
+ *
+ * It also keeps "Daily jobs" to jobs you haven't applied to yet. When the
+ * Applied box is ticked, the job is logged in the "Applied" tab (if it isn't
+ * there already) and its row leaves "Daily jobs". Ticking by hand moves it at
+ * once; rows ticked by another agent, or already in "Applied", are cleared at
+ * the start of each scan.
  */
 
 const TOKEN = 'PASTE-YOUR-TOKEN-HERE';
 const DAILY_TAB = 'Daily jobs';
+const APPLIED_TAB = 'Applied';
 const DEDUPE_TABS = ['Daily jobs', 'Applied'];
+const FOLLOW_UP_DAYS = 7;
 
 function doPost(e) {
   let body;
@@ -48,6 +56,8 @@ function addRows_(rows) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(DAILY_TAB);
   if (!sheet) return { ok: false, error: 'no tab named ' + DAILY_TAB };
+
+  sweepApplied_(ss);
 
   const seen = new Set();
   DEDUPE_TABS.forEach(function (name) {
@@ -122,6 +132,89 @@ function addRows_(rows) {
     sheet.getRange(2, search + 1, fresh.length, 1).setRichTextValues(rich);
   }
   return { ok: true, added: fresh.length, skipped: rows.length - fresh.length };
+}
+
+// Runs by itself whenever you edit the sheet by hand.
+function onEdit(e) {
+  const range = e && e.range;
+  if (!range || range.getSheet().getName() !== DAILY_TAB || range.getRow() < 2) return;
+  const sheet = range.getSheet();
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  const col = headers.indexOf('Applied') + 1;
+  if (!col || range.getColumn() > col || range.getLastColumn() < col) return;
+  const ss = sheet.getParent();
+  const rows = [];
+  for (let r = range.getRow(); r <= range.getLastRow(); r++) {
+    if (sheet.getRange(r, col).getValue() === true) rows.push(r);
+  }
+  moveToApplied_(ss, sheet, headers, rows);
+}
+
+// Clear rows that are ticked, or whose job is already in the Applied tab.
+function sweepApplied_(ss) {
+  const sheet = ss.getSheetByName(DAILY_TAB);
+  if (!sheet || sheet.getLastRow() < 2) return 0;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  const done = appliedKeys_(ss);
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues();
+  const a = headers.indexOf('Applied'), c = headers.indexOf('Company'), r = headers.indexOf('Role');
+  const rows = [];
+  values.forEach(function (row, i) {
+    if (!row[c] && !row[r]) return;
+    if ((a >= 0 && row[a] === true) || done.has(key_(row[c], row[r]))) rows.push(i + 2);
+  });
+  return moveToApplied_(ss, sheet, headers, rows);
+}
+
+function appliedKeys_(ss) {
+  const keys = new Set();
+  const tab = ss.getSheetByName(APPLIED_TAB);
+  if (!tab || tab.getLastRow() < 2) return keys;
+  const head = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0].map(String);
+  const c = head.indexOf('Company'), r = head.indexOf('Role');
+  if (c < 0 || r < 0) return keys;
+  tab.getRange(2, 1, tab.getLastRow() - 1, tab.getLastColumn()).getValues()
+    .forEach(function (row) { keys.add(key_(row[c], row[r])); });
+  return keys;
+}
+
+// Log each row in the Applied tab if it's missing there, then delete it from Daily jobs.
+function moveToApplied_(ss, sheet, headers, rowNumbers) {
+  if (!rowNumbers.length) return 0;
+  const tab = ss.getSheetByName(APPLIED_TAB);
+  const done = appliedKeys_(ss);
+  if (tab) {
+    const aHead = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0].map(String);
+    const tz = ss.getSpreadsheetTimeZone();
+    const today = new Date();
+    const follow = new Date(today.getTime() + FOLLOW_UP_DAYS * 86400000);
+    rowNumbers.forEach(function (n) {
+      const range = sheet.getRange(n, 1, 1, headers.length);
+      const vals = range.getValues()[0];
+      const formulas = range.getFormulas()[0];
+      const get = function (h) {
+        const i = headers.indexOf(h);
+        return i < 0 ? '' : (formulas[i] || vals[i]);
+      };
+      if (done.has(key_(get('Company'), get('Role')))) return;
+      const out = aHead.map(function (h) {
+        switch (h) {
+          case 'Applied': case 'Applied date': return Utilities.formatDate(today, tz, 'yyyy-MM-dd');
+          case 'Status': return 'Applied';
+          case 'Follow up on': return Utilities.formatDate(follow, tz, 'yyyy-MM-dd');
+          case 'Resume sent': return get('Resume');
+          case 'Notes': return 'Moved from Daily jobs when marked applied';
+          default: return get(h);
+        }
+      });
+      tab.appendRow(out);
+      done.add(key_(get('Company'), get('Role')));
+    });
+  }
+  // Delete from the bottom up so row numbers stay valid
+  rowNumbers.slice().sort(function (x, y) { return y - x; })
+    .forEach(function (n) { sheet.deleteRow(n); });
+  return rowNumbers.length;
 }
 
 function key_(company, role) {
