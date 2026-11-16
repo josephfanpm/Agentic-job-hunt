@@ -321,3 +321,40 @@ def test_cli_mode_people_and_guards(tmp_path, capsys):
     empty = tmp_path / "empty"
     assert cli.main(["--home", str(empty), "scan"]) == 2        # no titles configured
     assert "cannot scan" in capsys.readouterr().out
+
+
+# ---- sheet receiver ----------------------------------------------------------
+def test_webhook_rows_and_send(monkeypatch):
+    from jobhunt import net, webhook
+    rows = webhook.rows([job(source="jobspy:linkedin")], cfg(), TODAY)
+    r = rows[0]
+    assert r["Link"] == {"url": "https://jobs.example/1", "label": "LinkedIn"}
+    assert [x["label"] for x in r["LinkedIn search"]] == ["Recruiters", "Hiring managers", "Peers"]
+    assert r["Company"] == "Jobber" and r["Rank"] == 1 and r["Applied"] is False
+    json.dumps(rows)   # must be serialisable
+
+    sent = {}
+
+    class Resp:
+        def __init__(self, body): self.body = body
+        def read(self): return self.body
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake_urlopen(req, timeout):
+        sent["body"] = json.loads(req.data)
+        return Resp(b'{"ok": true, "added": 1, "skipped": 0}')
+
+    monkeypatch.setattr(webhook.urllib.request, "urlopen", fake_urlopen)
+    assert webhook.send("https://script.example/exec", "secret", rows)["added"] == 1
+    assert sent["body"]["token"] == "secret" and len(sent["body"]["rows"]) == 1
+
+    monkeypatch.setattr(webhook.urllib.request, "urlopen", lambda req, timeout: Resp(b"<html>sign in</html>"))
+    with pytest.raises(net.FetchError, match="Anyone"):
+        webhook.send("https://script.example/exec", "secret", rows)
+    monkeypatch.setattr(webhook.urllib.request, "urlopen",
+                        lambda req, timeout: Resp(b'{"ok": false, "error": "wrong or missing token"}'))
+    with pytest.raises(net.FetchError, match="token"):
+        webhook.send("https://script.example/exec", "secret", rows)
+    with pytest.raises(ValueError):
+        webhook.send("", "", rows)

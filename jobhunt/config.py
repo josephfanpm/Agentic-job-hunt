@@ -16,6 +16,8 @@ DEFAULTS: dict = {
     "mode": "lean",
     "tracker": "csv",           # "csv" (no connector needed) or "sheet" (Google Sheets)
     "sheet_id": "",
+    "sheet_webhook": "",        # Apps Script web app URL (sheet/README-apps-script.md)
+    "sheet_token": "",          # the secret set in that script; keep it private
     "sheet_tab_ids": {"Daily jobs": 1, "Applied": 2, "Network": 3},
     "titles": {
         "include": [],          # phrases; a job title must contain at least one
@@ -23,7 +25,8 @@ DEFAULTS: dict = {
     },
     "keywords": {
         "boost": [],            # terms that raise a job's score (title counts more)
-        "require_any": [],      # if set, a job must mention at least one of these
+        "require_any": [],      # if set, a job must mention at least `require_min` of these
+        "require_min": 1,
         "exclude": [],          # dropped when found in the title or company name
     },
     "locations": {

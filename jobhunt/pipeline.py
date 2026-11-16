@@ -70,6 +70,19 @@ def location_ok(job: Job, cfg: dict) -> str | None:
     return "outside your countries"
 
 
+def canonical_company(name: str, cfg: dict) -> str:
+    """Fold legal entities into the name you track: 'Amazon Web Services, Inc.' -> 'Amazon'.
+
+    Only companies named in priority_companies or big_companies are folded, so
+    the per-company cap and duplicate check treat every listing of them as one.
+    """
+    n = norm(name)
+    for known in list(cfg.get("priority_companies", [])) + list(cfg.get("big_companies", [])):
+        if norm(known) and has_phrase(n, known):
+            return known
+    return name
+
+
 def is_priority(job: Job, cfg: dict) -> bool:
     company = norm(job.company)
     return any(norm(c) and has_phrase(company, c) for c in cfg["priority_companies"])
@@ -167,6 +180,7 @@ def process(raw: list[Job], cfg: dict, seen: dict | None = None,
         if not job.title or not job.url:
             drop("missing title or link")
             continue
+        job.company = canonical_company(job.company, cfg)
         reason = title_ok(job, cfg)          # cheapest test first
         if reason:
             drop(reason)
@@ -177,9 +191,10 @@ def process(raw: list[Job], cfg: dict, seen: dict | None = None,
             drop(reason)
             continue
         req = cfg["keywords"]["require_any"]
-        if req:
-            hay = f"{norm_title(job.title)} {norm(job.company)} {norm(job.description)}"
-            if not any(has_phrase(hay, k) for k in req):
+        if req and not is_priority(job, cfg):   # referral companies skip the sector test
+            hay = f"{norm_title(job.title)} {norm(job.company)} {role_text(job.description)}"
+            hits = sum(1 for k in req if has_phrase(hay, k))
+            if hits < max(1, cfg["keywords"].get("require_min", 1)):
                 drop("no required keyword")
                 continue
         key = job_key(job.company, job.title)
@@ -250,3 +265,12 @@ def run(cfg: dict, *, home: Path, only: set[str] | None = None, include_seen: bo
             store.setdefault(job_key(job.company, job.title), today.isoformat())
         save_seen(seen_path, store)
     return result
+
+
+def forget(home: Path, jobs: list[Job]) -> None:
+    """Undo `remember` for jobs that never reached the tracker."""
+    path = home / "state" / "seen.json"
+    store = load_seen(path)
+    for job in jobs:
+        store.pop(job_key(job.company, job.title), None)
+    save_seen(path, store)

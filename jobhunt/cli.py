@@ -108,6 +108,18 @@ def cmd_scan(args) -> int:
     elif res.jobs and cfg["tracker"] == "csv":
         n = tracker.add_jobs(home, res.jobs, cfg, today)
         print(f"\nadded {n} row(s) to {tracker.path(home, 'Daily jobs')}")
+    elif res.jobs and cfg.get("sheet_webhook"):
+        from jobhunt import net, webhook
+        try:
+            reply = webhook.send(cfg["sheet_webhook"], cfg["sheet_token"], webhook.rows(res.jobs, cfg, today))
+        except (net.FetchError, ValueError) as e:
+            # Keep the jobs for next time instead of marking them seen
+            pipeline.forget(home, res.jobs)
+            print(f"\ncould not write to the sheet: {e}")
+            print("these jobs will be offered again on the next scan.")
+            return 1
+        print(f"\nsheet: added {reply.get('added', 0)} row(s); "
+              f"{reply.get('skipped', 0)} already in the sheet")
     elif res.jobs:
         req_file = out_dir / f"sheet-rows-{today.isoformat()}.json"
         req_file.write_text(json.dumps(sheet.row_requests(res.jobs, cfg, today), separators=(",", ":"),

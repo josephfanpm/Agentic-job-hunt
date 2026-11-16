@@ -229,7 +229,7 @@ def test_priority_company_is_exempt_from_age_and_ranks_first():
     raw = [job(company="DoorDash USA", posted="2025-07-14", url="u1"),
            job(company="Fresh Co", posted="2026-11-15", url="u2", title="Product Manager, Marketplace")]
     jobs, _ = pipeline.process(raw, cfg(priority_companies=["DoorDash"]), today=TODAY)
-    assert [j.company for j in jobs] == ["DoorDash USA", "Fresh Co"]
+    assert [j.company for j in jobs] == ["DoorDash", "Fresh Co"]
     assert "priority company" in jobs[0].why.lower() and "open since 2025-07-14" in jobs[0].why
 
 
@@ -294,3 +294,37 @@ def test_run_survives_a_broken_source_and_remembers_what_it_showed(tmp_path):
     assert second.jobs == [] and second.dropped == {"already seen": 1}
     again = pipeline.run(c, home=tmp_path, get=get, today=TODAY, include_seen=True)
     assert len(again.jobs) == 1
+
+
+def test_require_any_ignores_benefits_and_spares_priority_companies():
+    raw = [job(company="Perks Only", url="a", description="Great health insurance and dental."),
+           job(company="Amazon", url="b", description="Kindle reading."),
+           job(company="Real", url="c", description="Build our nursing marketplace.")]
+    c = cfg(keywords={"require_any": ["health", "nursing"]}, priority_companies=["Amazon"])
+    jobs, dropped = pipeline.process(raw, c, today=TODAY)
+    assert sorted(j.company for j in jobs) == ["Amazon", "Real"] and dropped == {"no required keyword": 1}
+
+
+def test_forget_undoes_remember(tmp_path):
+    j = job()
+    pipeline.save_seen(tmp_path / "state" / "seen.json", {pipeline.job_key(j.company, j.title): "2026-11-15"})
+    pipeline.forget(tmp_path, [j])
+    assert pipeline.load_seen(tmp_path / "state" / "seen.json") == {}
+
+
+def test_legal_entities_fold_into_tracked_company_and_share_the_cap():
+    raw = [job(company=f"Amazon Web Services, Inc.", title=f"Product Manager, Team {i}", url=f"a{i}",
+               source="jobspy:linkedin") for i in range(4)]
+    raw.append(job(company="Amazon", title="Product Manager, Team 0", url="direct", source="amazon"))
+    jobs, dropped = pipeline.process(raw, cfg(priority_companies=["Amazon"], max_per_company=2), today=TODAY)
+    assert [j.company for j in jobs] == ["Amazon", "Amazon"]
+    assert any(j.url == "direct" for j in jobs)          # the employer's own listing wins
+    assert dropped == {"duplicate": 1, "over the per-company limit": 2}
+
+
+def test_require_min_needs_several_distinct_terms():
+    raw = [job(company="One", url="a", description="Software delivery at scale."),
+           job(company="Two", url="b", description="Clinical workflows for nursing teams.")]
+    c = cfg(keywords={"require_any": ["delivery", "clinical", "nursing"], "require_min": 2})
+    jobs, _ = pipeline.process(raw, c, today=TODAY)
+    assert [j.company for j in jobs] == ["Two"]
