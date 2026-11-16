@@ -5,7 +5,8 @@
 1. **Get the real job description.** The scan saves one per job in `private/jds/`. If it isn't there, fetch the posting and save it. If you can't, stop: never tailor from a guess or a remembered description.
 2. **See the gap:** `python -m jobhunt check private/resume.pdf --jd <jd file>` lists the posting's most-used terms that the base resume lacks. Treat it as a list of things to check against the profile, not a list of words to add.
 3. **Look up the company's tools** in this posting and its other postings.
-4. **Read `private/profile.md`:** experience, wins, metrics and approved bullets.
+4. **Read `private/profile.md`,** especially the **Experience bank**: every job, project, result and company detail the user gave in [profile-interview.md](profile-interview.md).
+5. **Choose what goes in for this job.** Rank the bank's projects by how closely they match the job description's top needs, and pick the strongest for each role. Different jobs should get different projects in a different order, not the same resume with new keywords. If the bank is empty or thin, offer to run the profile interview first; otherwise work from the base resume.
 
 ## Resume rules
 
@@ -13,7 +14,9 @@
 - **Section order:** Experience, Projects, Education, Additional Information.
 - **No generic skills list** (Diego Granados's advice). Put job keywords inside bullets, showing how you used each one, and only where your experience backs it up. Additional Information is 2–3 lines: Tools (only real tools, the company's matching stack first), Languages, and Licensure if it helps.
 - **Education** shows the graduation year only.
-- **Bullets:** action + what changed for users + a number. Put the bullets closest to this job first.
+- **Bullets:** action + what changed for users + a number. Write them fresh for this job from the Experience bank, using the job description's words where the user's work really matches. Use an Approved bullet word for word when it fits. Put the bullets closest to this job first.
+- **Company context:** when an employer isn't well known, add a short line under its name saying what it does (from the bank's Company line), so the recruiter can picture it.
+- **Skip `(unverified)` numbers.** Describe the result without the number.
 - **Plain language.** A recruiter outside your company must understand every bullet. Replace internal feature names with what changed for the user.
 - **Numbers come only from your own sources.** If you can't defend a number in an interview, leave it out.
 - **Never invent** titles, employers, dates, degrees, tools or projects. Projects are public repos only, each name a hyperlink.

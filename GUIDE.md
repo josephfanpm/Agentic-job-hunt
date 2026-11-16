@@ -7,10 +7,11 @@ This guide takes you from cloning the repo to sending your first applications. S
 | Tool | Why | Required? |
 |---|---|---|
 | Python 3.10+ | Runs the scan, the resume check and the tracker | Yes |
-| An AI agent, such as [Claude Code](https://claude.com/claude-code) | Tailors resumes, drafts messages, applies, runs interview practice | For those steps. The scan and tracker work without one |
+| An AI agent: [Claude Code](https://claude.com/claude-code), Codex, Antigravity, Grok Build, Muse, or [an open model in your IDE](#using-open-weight-models) | Tailors resumes, drafts messages, applies, runs interview practice | For those steps. The scan and tracker work without one |
 | [Tectonic](https://tectonic-typesetting.github.io/) | Turns the LaTeX resume into a PDF, with no full LaTeX install | For tailored resumes |
 | Google Sheets connector | Only if you track in a Google Sheet; the default is local CSV files | Optional |
-| A second agent, such as Muse | Works the same tracker in parallel | Optional |
+| Gmail connector | Saves messages as Gmail drafts and updates the tracker from replies ([check-email.md](prompts/check-email.md)) | Optional |
+| A second agent, such as Muse or Grok | Works the same tracker in parallel | Optional |
 | LinkedIn Premium | Shows 2nd vs 3rd degree connections and raises search limits | Optional, useful while searching |
 
 ---
@@ -44,9 +45,19 @@ python -m jobhunt init --resume cv.pdf --titles "data analyst, senior data analy
 
 Run `python -m jobhunt doctor` at any time to see what's missing.
 
-### Step 2. Review your profile
+Or have your agent do all of Part 1, including the Sheet, Gmail and the profile interview:
 
-Open `private/profile.md`. The sections marked REVIEW were pulled from your resume by a script, so read them once. Then fill in the two sections only you can write:
+> Follow prompts/setup.md
+
+### Step 2. Build your experience bank
+
+Open `private/profile.md`. The sections marked REVIEW were pulled from your resume by a script, so read them once. Then have your agent interview you:
+
+> Run prompts/profile-interview.md
+
+It asks about each job one question at a time: what the company does, your role, and 2–5 projects with the problem, what you did, the result, the number and its source. Answers go in the **Experience bank** section. Tailoring picks different projects for each job from the bank, so you aren't limited to what fit on one resume. Plan on 20–40 minutes; you can stop and pick it up later.
+
+Two sections only you can approve:
 
 - **Wins and metrics:** one line per result, with its number and where the number comes from. If you couldn't defend a number in an interview, leave it out.
 - **Approved bullets:** resume bullets you've signed off on. Agents use them word for word.
@@ -69,7 +80,9 @@ The tracker defaults to CSV files in `private/tracker/`, which need no connector
 
 > Run prompts/create-sheet.md
 
-It builds the sheet, then sets `"tracker": "sheet"` and the sheet ID in your config.
+It builds the sheet, then sets `"tracker": "sheet"` and the sheet ID in your config. Your agent needs a Google Sheets or Drive connector for this (in most apps: Settings → Connectors). Connect your personal Google account, not a work one.
+
+To keep the tracker current from your inbox, connect Gmail too, then ask the agent to run [prompts/check-email.md](prompts/check-email.md). It saves replies as Gmail drafts and never sends.
 
 Either way you get three tabs:
 - **Daily jobs:** new roles from the scan
@@ -184,7 +197,9 @@ The mock interview asks one question at a time from the real job description and
 
 ## Running two agents at once
 
-Claude and Muse (or any two agents) can share one tracker safely, because both follow [AGENTS.md](AGENTS.md):
+To start any agent (Muse, Grok, Codex or another) on the whole job search, paste the kickoff message from [prompts/kickoff.md](prompts/kickoff.md). It has one version for agents that can run commands and one for chat-only sites such as grok.com.
+
+Claude and Muse, Grok, or any two agents can share one tracker safely, because both follow [AGENTS.md](AGENTS.md):
 
 - New rows are inserted under the header. Agents never reorder, delete or overwrite each other's rows.
 - Before working on a job, an agent claims it in the Notes column, and the other agent skips it.
@@ -192,6 +207,30 @@ Claude and Muse (or any two agents) can share one tracker safely, because both f
 - Each column has an owner in `sheet/schema.json`: the scan, any agent, or only you.
 
 A simple split: one agent tailors, the other applies through job-site logins. Either can do everything alone.
+
+---
+
+## Using open-weight models
+
+Any agent that can run shell commands, edit files and read `AGENTS.md` works, including ones running open-weight models.
+
+**In VS Code (or Cursor, Windsurf, VSCodium):** install [Cline](https://cline.bot), Roo Code or [Continue](https://continue.dev), open the project folder, and pick a provider in the extension's settings:
+
+| Provider | What it is | Notes |
+|---|---|---|
+| [DeepSeek](https://platform.deepseek.com) | DeepSeek's own API | Very cheap per token. Data is stored in China |
+| [OpenRouter](https://openrouter.ai) | One key for many open models (DeepSeek, Qwen, Kimi, GLM and others) | Some models are free with a daily cap. Free ones can queue at busy times |
+| [xAI](https://x.ai/api) | Grok models through an API key | Paid per token. Grok Build is the native app |
+| [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai) | Runs the model on your computer | Free and private. Needs a lot of memory (see below) |
+
+**In a terminal:** [OpenCode](https://opencode.ai) and [Aider](https://aider.chat) work with the same providers. Start one in the project folder and tell it: *Read AGENTS.md, then follow prompts/setup.md* (or the kickoff message in [prompts/kickoff.md](prompts/kickoff.md)).
+
+**What the model needs:**
+- **Reliable tool calling.** The agent has to run `python -m jobhunt …` and edit files over many steps. Small models often lose track and stop, or invent output.
+- **A long context window,** at least 32k tokens. `AGENTS.md`, the profile, a job description and the resume template add up. Ollama's default context is much smaller, so raise it (`num_ctx`) or the model will quietly drop your profile.
+- **For local models,** a coding model of about 30B parameters or more, which needs roughly 24 GB of free RAM or VRAM. 7–14B models can run the scan but are unreliable at tailoring.
+
+Whatever the model, run `python -m jobhunt check` on every resume and read it yourself before sending. The never-invent rules in `AGENTS.md` only hold as well as the model follows them.
 
 ---
 

@@ -20,6 +20,9 @@ Agents use only the facts in this file and the user's own resume files. Anything
 ## Experience
 For each role: title, company, dates (month and year), and 1 line describing the company.
 
+## Experience bank
+Everything you've done, in more detail than any one resume: for each job, what the company does, your role, and 2–5 projects with the problem, what you did, the result with its number and source, and the skills used. Tailored resumes pick from here for each job. An agent fills this in with you: see [prompts/profile-interview.md](../prompts/profile-interview.md).
+
 ## Wins and metrics
 One line per win: what changed, the number, and where the number comes from. Only numbers you can defend in an interview.
 

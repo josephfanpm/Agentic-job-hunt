@@ -63,7 +63,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 
 ## Works with more than one agent
 
-Claude and Muse (or any two agents) can share one tracker: both can create the Google Sheet, run the scan, tailor and apply. They follow one contract ([AGENTS.md](AGENTS.md)), so they never overwrite each other's work. Any agent that can run a command and edit a sheet can join.
+Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwen in your IDE: any two can share one tracker. Each can create the Google Sheet, run the scan, tailor and apply. They follow one contract ([AGENTS.md](AGENTS.md)), so they never overwrite each other's work. Any agent that can run a command and edit a sheet can join. To start one on the whole search, paste the message in [prompts/kickoff.md](prompts/kickoff.md). Chat-only sites such as grok.com have their own version. GUIDE.md covers [setting up open-weight models](GUIDE.md#using-open-weight-models).
 
 ## The rules that make it work
 
@@ -81,8 +81,9 @@ Claude and Muse (or any two agents) can share one tracker: both can create the G
 - **[MODES.md](MODES.md):** the three flows and what each costs
 - **[AGENTS.md](AGENTS.md):** the contract every agent follows
 - **Prompts:**
+  - Getting started: [setup](prompts/setup.md), [profile-interview](prompts/profile-interview.md) (your experience bank), [kickoff](prompts/kickoff.md) (for any agent, including Muse and Grok)
   - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md)
-  - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md)
+  - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md), [check-email](prompts/check-email.md)
   - Applying: [tailor-resume](prompts/tailor-resume.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
   - Interviews and offers: [interview-prep](prompts/interview-prep.md), [mock-interview](prompts/mock-interview.md), [offer](prompts/offer.md), [review](prompts/review.md)
 
