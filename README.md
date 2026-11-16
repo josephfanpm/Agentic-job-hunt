@@ -4,7 +4,7 @@ A job search run by scripts, AI agents and one human. Scripts find and rank the 
 
 It works for any role: set your job titles in one config file. You choose how much the AI does, from almost nothing to nearly everything.
 
-> **Never used a terminal? [Start here](START-HERE.md).** A free AI app can set it all up from one pasted message, or you can follow every click yourself. You don't need a paid AI plan or a code editor.
+> **Never used a terminal, or don't know how to code? [Start here](START-HERE.md).** A free AI app can set it all up from one pasted message, or you can follow every click yourself. You don't need a paid AI plan or a code editor.
 
 Developer quick start:
 
