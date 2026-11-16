@@ -58,6 +58,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 | `python -m jobhunt due` | Follow-ups due today |
 | `python -m jobhunt stats` | Interviews by channel |
 | `python -m jobhunt mode` | Show or change the flow |
+| `python -m jobhunt schedule on` | Run the scan automatically at log-on (`--at 08:00` for a set time) |
 | `python -m jobhunt doctor` | Check the setup |
 
 ## Works with more than one agent

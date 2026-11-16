@@ -18,12 +18,18 @@
  * there already) and its row leaves "Daily jobs". Ticking by hand moves it at
  * once; rows ticked by another agent, or already in "Applied", are cleared at
  * the start of each scan.
+ *
+ * Old jobs you haven't applied to move to an "Archive" tab once they're older
+ * than the scan's expire_after_days setting (default 14), counted from the
+ * Posted date, or from Scanned when there's no posting date. Jobs at your
+ * priority companies are kept. Archived jobs are never added again.
  */
 
 const TOKEN = 'PASTE-YOUR-TOKEN-HERE';
 const DAILY_TAB = 'Daily jobs';
 const APPLIED_TAB = 'Applied';
-const DEDUPE_TABS = ['Daily jobs', 'Applied'];
+const ARCHIVE_TAB = 'Archive';
+const DEDUPE_TABS = ['Daily jobs', 'Applied', 'Archive'];
 const FOLLOW_UP_DAYS = 7;
 
 function doPost(e) {
@@ -39,7 +45,7 @@ function doPost(e) {
   const lock = LockService.getDocumentLock();
   lock.waitLock(30000);
   try {
-    return reply_(addRows_(body.rows || []));
+    return reply_(addRows_(body.rows || [], body.expire_after_days, body.keep_companies || []));
   } catch (err) {
     return reply_({ ok: false, error: String(err) });
   } finally {
@@ -52,12 +58,13 @@ function doGet() {
   return reply_({ ok: true, message: 'agentic-job-hunt receiver is running' });
 }
 
-function addRows_(rows) {
+function addRows_(rows, expireDays, keepCompanies) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(DAILY_TAB);
   if (!sheet) return { ok: false, error: 'no tab named ' + DAILY_TAB };
 
-  sweepApplied_(ss);
+  const moved = sweepApplied_(ss);
+  const archived = expireOld_(ss, expireDays, keepCompanies);
 
   const seen = new Set();
   DEDUPE_TABS.forEach(function (name) {
@@ -79,7 +86,7 @@ function addRows_(rows) {
       fresh.push(row);
     }
   });
-  if (!fresh.length) return { ok: true, added: 0, skipped: rows.length };
+  if (!fresh.length) return { ok: true, added: 0, skipped: rows.length, moved: moved, archived: archived };
 
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
   const width = headers.length;
@@ -131,7 +138,8 @@ function addRows_(rows) {
     });
     sheet.getRange(2, search + 1, fresh.length, 1).setRichTextValues(rich);
   }
-  return { ok: true, added: fresh.length, skipped: rows.length - fresh.length };
+  return { ok: true, added: fresh.length, skipped: rows.length - fresh.length,
+           moved: moved, archived: archived };
 }
 
 // Runs by itself whenever you edit the sheet by hand.
@@ -215,6 +223,60 @@ function moveToApplied_(ss, sheet, headers, rowNumbers) {
   rowNumbers.slice().sort(function (x, y) { return y - x; })
     .forEach(function (n) { sheet.deleteRow(n); });
   return rowNumbers.length;
+}
+
+// Move unapplied jobs older than `days` to the Archive tab, except at kept companies.
+function expireOld_(ss, days, keepCompanies) {
+  days = Number(days);
+  if (!days || days < 1) return 0;
+  const sheet = ss.getSheetByName(DAILY_TAB);
+  if (!sheet || sheet.getLastRow() < 2) return 0;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  const width = headers.length;
+  const p = headers.indexOf('Posted'), s = headers.indexOf('Scanned'), c = headers.indexOf('Company');
+  const keep = (keepCompanies || []).map(function (k) { return norm_(k); }).filter(String);
+  const cutoff = new Date(Date.now() - days * 86400000);
+  const range = sheet.getRange(2, 1, sheet.getLastRow() - 1, width);
+  const values = range.getValues();
+  const formulas = range.getFormulas();
+  const old = [];
+  values.forEach(function (row, i) {
+    if (!row[c]) return;
+    const company = ' ' + norm_(row[c]) + ' ';
+    if (keep.some(function (k) { return company.indexOf(' ' + k + ' ') >= 0; })) return;
+    const when = asDate_(p >= 0 ? row[p] : '') || asDate_(s >= 0 ? row[s] : '');
+    if (when && when < cutoff) old.push(i);
+  });
+  if (!old.length) return 0;
+
+  let archive = ss.getSheetByName(ARCHIVE_TAB);
+  if (!archive) {
+    archive = ss.insertSheet(ARCHIVE_TAB);
+    archive.getRange(1, 1, 1, width).setValues([headers]);
+    sheet.getRange(1, 1, 1, width).copyTo(archive.getRange(1, 1, 1, width),
+      SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
+    archive.setFrozenRows(1);
+  }
+  const aHead = archive.getRange(1, 1, 1, archive.getLastColumn()).getValues()[0].map(String);
+  const out = old.map(function (i) {
+    return aHead.map(function (h) {
+      const j = headers.indexOf(h);
+      return j < 0 ? '' : (formulas[i][j] || values[i][j]);
+    });
+  });
+  archive.getRange(archive.getLastRow() + 1, 1, out.length, aHead.length).setValues(out);
+  old.slice().reverse().forEach(function (i) { sheet.deleteRow(i + 2); });
+  return old.length;
+}
+
+function asDate_(v) {
+  if (v instanceof Date && !isNaN(v)) return v;
+  const m = String(v || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+}
+
+function norm_(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
 function key_(company, role) {

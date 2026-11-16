@@ -116,12 +116,15 @@ You get the strongest matches among your connections, each with a reason and an 
 
 ### Step 7. Schedule the daily scan
 
-With the CSV tracker, schedule the command itself. No agent is involved, so it costs nothing:
+```bash
+python -m jobhunt schedule on               # at log-on; add --at 08:00 for a set time too
+```
 
-- **Windows:** Task Scheduler → run `python -m jobhunt scan` daily, starting in the repo folder
-- **macOS / Linux:** `0 8 * * 1-5 cd /path/to/agentic-job-hunt && python -m jobhunt scan`
+The scan then runs on your own computer, at most once a day, with no AI and no window. With a Google Sheet, set up the receiver first ([sheet/README-apps-script.md](sheet/README-apps-script.md), about 5 minutes) so results can reach the sheet.
 
-With a Google Sheet, schedule an agent using the prompt in [prompts/daily-scan.md](prompts/daily-scan.md).
+Prefer this to a scheduled cloud agent. Cloud sandboxes often block job sites, and a scheduled agent shares your AI usage limit; [prompts/daily-scan.md](prompts/daily-scan.md) explains both.
+
+The list stays fresh on its own. Applied jobs move to the Applied tab, and jobs you haven't applied to move to an Archive tab after 14 days (`expire_after_days`). Jobs at your priority companies are kept.
 
 ---
 

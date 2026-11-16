@@ -6,22 +6,46 @@ The scan is a script. It reads every source in `private/config.json`, filters by
 python -m jobhunt scan            # add --dry-run to preview without recording anything
 ```
 
-## With the CSV tracker
+## Run it automatically
 
-No agent is needed. Schedule the command itself:
+```bash
+python -m jobhunt schedule on                 # every time you log in
+python -m jobhunt schedule on --at 08:00      # at log-on and every day at 8:00
+python -m jobhunt schedule status
+python -m jobhunt schedule off
+```
 
-- **Windows:** Task Scheduler → run `python -m jobhunt scan` daily, starting in the repo folder.
-- **macOS / Linux:** `0 8 * * 1-5 cd /path/to/agentic-job-hunt && python -m jobhunt scan`
+This uses your computer's own scheduler: Task Scheduler on Windows, launchd on macOS, cron on Linux. No window opens, and no AI is used. The scheduled scan:
 
-New rows appear at the top of `private/tracker/daily_jobs.csv`.
+- runs at most once a day, however often you log in
+- waits up to 5 minutes for the internet after start-up
+- writes what happened to `private/logs/scan.log`
 
-## With a Google Sheet
+It catches up after days away, because it looks back `max_age_days`, and the seen-list stops anything showing twice.
 
-Schedule an agent with this prompt. It's written for an unattended run.
+**Where results go**
+- **CSV tracker:** new rows at the top of `private/tracker/daily_jobs.csv`.
+- **Google Sheet:** set up the receiver once ([sheet/README-apps-script.md](../sheet/README-apps-script.md)). It takes about 5 minutes and needs no Google Cloud account. Until then, scheduled scans skip rather than lose results.
 
-> Run `python -m jobhunt scan` in the repo. If it prints "sheet update ready", send that file's contents as one `batchUpdate` to the spreadsheet it names, without changing them. Then read row 2 of "Daily jobs" back to confirm it landed. Follow AGENTS.md: never reorder, delete or overwrite existing rows. If the scan found nothing, do nothing. Finish with the scan's first two lines of output.
->
-> Then follow the rules for the current mode in MODES.md.
+### Why not a scheduled cloud agent?
+
+You can schedule an AI agent in the cloud to run the scan instead, but it fails in two common ways:
+
+- **The cloud network blocks job sites.** Hosted agent sandboxes often allow only a short list of websites, so job boards answer "403 Forbidden" and the scan finds nothing. If you use one anyway, allow these domains in its network settings: `boards-api.greenhouse.io`, `api.lever.co`, `api.ashbyhq.com`, `apply.workable.com`, `remoteok.com`, `remotive.com`, `weworkremotely.com`, `himalayas.app`, `hn.algolia.com`, `www.amazon.jobs`, `script.google.com` and `script.googleusercontent.com`. JobSpy also needs `www.linkedin.com`, `www.indeed.com`, `ca.indeed.com`, `www.ziprecruiter.com` and `www.glassdoor.com`.
+- **It shares your AI usage limit.** A scheduled agent draws on the same allowance as your own chats. After a heavy session, the morning run is refused and nothing is added.
+
+The local schedule avoids both: it runs on your network, and the scan needs no AI.
+
+## Keeping the list fresh
+
+The daily list holds only jobs you could still apply to:
+
+- **Applied jobs leave the list.** Tick **Applied** (or run `python -m jobhunt applied` with the CSV tracker), and the job moves to the Applied tab, which is the record from then on.
+- **Old jobs are archived.** Jobs you haven't applied to move to an **Archive** tab (or `archive.csv`) once they're older than `expire_after_days`, which defaults to 14. Age is counted from the posting date, or from the day the scan found the job when the posting has no date. Archived jobs never come back as new.
+- **Priority companies are exempt.** Jobs at `priority_companies` stay however old they are, because a referral can still work on an older posting.
+- Set `"expire_after_days": 0` to keep everything.
+
+**Why 14 days:** recruiters review the earliest applicants first, so a cold application to a posting more than about two weeks old rarely gets looked at. With a referral or a direct message to the hiring manager, an older posting can still be worth it, which is why priority companies are exempt.
 
 ## Sources
 
@@ -32,12 +56,12 @@ Schedule an agent with this prompt. It's written for an unattended run.
 | We Work Remotely | `sources.weworkremotely: ["remote-product-jobs"]` | List the category feeds you want |
 | Hacker News "Who is hiring?" | `sources.hackernews` (on by default) | Free-text posts, so company, title and location are best guesses |
 | Amazon | `sources.amazon: true` | Amazon's own careers search |
-| LinkedIn, Indeed, ZipRecruiter | `sources.jobspy: true`, plus `jobspy.searches` | Needs `pip install python-jobspy`; LinkedIn often rate-limits |
+| LinkedIn, Indeed, ZipRecruiter, Glassdoor | `sources.jobspy: true`, plus `jobspy.searches` | Needs `pip install python-jobspy`; LinkedIn often rate-limits; adds a minute or two |
 
 ## Tuning
 
-- **Too many poor matches:** add words to `titles.exclude`, or set `keywords.require_any`.
+- **Too many poor matches:** add words to `titles.exclude`, or set `keywords.require_any` and raise `keywords.require_min` to 2.
 - **Too few:** widen `titles.include`, raise `max_age_days`, add company boards.
-- **One employer fills the list:** lower `max_per_company`.
+- **One employer fills the list:** lower `max_per_company`. Legal names such as "Amazon Web Services, Inc." count as the company you listed in `priority_companies` or `big_companies`.
 - **Ranking feels off:** edit `keywords.boost`. Title matches count more than description matches, and benefits or legal text is ignored.
 - The scan prints how many jobs each rule dropped, so you can see what a change does.

@@ -51,7 +51,9 @@ The last lines should say `sheet: added N row(s)`. Open the sheet: new jobs are 
 ## Good to know
 
 - **Columns are matched by header name.** Rename a column, and the scan stops filling it. Extra columns, such as another agent's, are left blank.
-- **Jobs already in Daily jobs or Applied are skipped,** matched on Company + Role.
+- **Jobs already in Daily jobs, Applied or Archive are skipped,** matched on Company + Role.
+- **Applied jobs leave Daily jobs.** Ticking **Applied** moves the row to the Applied tab straight away, adding it there if it's missing. Rows ticked by another agent are moved at the next scan.
+- **Old jobs are archived.** Jobs you haven't applied to move to an **Archive** tab once they're older than `expire_after_days` (default 14). Age is counted from Posted, or from Scanned when there's no posting date. Companies in `priority_companies` are kept. Set it to 0 to keep everything.
 - **If you edit the script later,** use **Deploy → Manage deployments → Edit → Version: New version**. That keeps the same URL.
 - **If the sheet can't be reached,** the scan keeps those jobs and offers them again next time.
 - **To turn it off,** use **Deploy → Manage deployments → Archive**.

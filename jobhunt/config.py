@@ -36,7 +36,8 @@ DEFAULTS: dict = {
         "prefer": [],           # place names that raise the score, e.g. ["Toronto"]
     },
     "pay": {"floor": None, "target": None},   # yearly, in the currency you're paid in
-    "max_age_days": 7,
+    "max_age_days": 7,          # skip postings older than this when scanning
+    "expire_after_days": 14,    # move unapplied jobs older than this to Archive (0 = never)
     "max_results": 25,
     "max_per_company": 5,       # keeps one big employer from filling the list
     "priority_companies": [],   # scored first: e.g. where someone will refer you

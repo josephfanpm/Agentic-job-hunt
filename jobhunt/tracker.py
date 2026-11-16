@@ -13,7 +13,8 @@ from jobhunt import people, sheet
 from jobhunt.models import Job
 from jobhunt.text import norm, norm_title
 
-FILES = {"Daily jobs": "daily_jobs.csv", "Applied": "applied.csv", "Network": "network.csv"}
+FILES = {"Daily jobs": "daily_jobs.csv", "Applied": "applied.csv", "Network": "network.csv",
+         "Archive": "archive.csv"}
 OPEN_STATUSES = {"applied", "referral requested", "recruiter screen", "interviewing"}
 
 
@@ -26,7 +27,7 @@ def path(home: Path, tab: str) -> Path:
 
 
 def headers(tab: str) -> list[str]:
-    return [c["name"] for c in sheet.columns(tab)]
+    return [c["name"] for c in sheet.columns("Daily jobs" if tab == "Archive" else tab)]
 
 
 def init(home: Path) -> list[Path]:
@@ -149,3 +150,22 @@ def channel_stats(home: Path) -> list[dict]:
 
 def searches_text(company: str, role: str, cfg: dict) -> str:
     return people.plain(people.for_job(company, role, cfg))
+
+
+def expire(home: Path, days: int, keep_companies: list[str], today: dt.date | None = None) -> int:
+    """Move unapplied jobs older than `days` to archive.csv. Returns how many moved."""
+    if not days or days < 1:
+        return 0
+    today = today or dt.date.today()
+    cutoff = (today - dt.timedelta(days=days)).isoformat()
+    keep = [norm(k) for k in keep_companies if norm(k)]
+    stay, old = [], []
+    for r in read(home, "Daily jobs"):
+        when = (r.get("Posted") or r.get("Scanned") or "")[:10]
+        company = f" {norm(r.get('Company'))} "
+        kept = any(f" {k} " in company for k in keep)
+        (old if when and when < cutoff and not kept else stay).append(r)
+    if old:
+        write(home, "Daily jobs", stay)
+        write(home, "Archive", read(home, "Archive") + old)
+    return len(old)

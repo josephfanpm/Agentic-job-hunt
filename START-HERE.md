@@ -114,16 +114,23 @@ Tailored resumes are written in LaTeX, a format that produces clean, consistent 
 3. Click **Menu** (top left), set **Compiler** to **XeLaTeX**, then click **Recompile**.
 4. Click **Download PDF**, then run `python -m jobhunt check` on the downloaded file.
 
-## Step 8. Run it every morning (optional)
+## Step 8. Run it automatically (optional)
 
-**Windows:**
-1. Open **Task Scheduler** and click **Create Basic Task**. Name it "Job scan" and choose **Daily**.
-2. For **Program**, type `python`. For **Arguments**, type `-m jobhunt scan`.
-3. For **Start in**, paste your project folder's location. Copy it from File Explorer's address bar.
+Paste this once:
 
-**Mac:** open the AI app or a terminal each morning and run `python3 -m jobhunt scan`.
+```
+python -m jobhunt schedule on
+```
 
-Or just run the scan yourself each morning; it takes a few seconds.
+From then on, the scan runs by itself a minute after you log in to your computer, at most once a day, in the background. It works on Windows, Mac and Linux. To also run it at a set time each day, add `--at 08:00`.
+
+| To | Paste |
+|---|---|
+| Check it's on | `python -m jobhunt schedule status` |
+| Turn it off | `python -m jobhunt schedule off` |
+| See what it did | Open `private/logs/scan.log` |
+
+Old jobs tidy themselves: anything you haven't applied to after 14 days moves to an Archive file, and jobs you've applied to move to the Applied list.
 
 ---
 

@@ -108,10 +108,16 @@ def cmd_scan(args) -> int:
     elif res.jobs and cfg["tracker"] == "csv":
         n = tracker.add_jobs(home, res.jobs, cfg, today)
         print(f"\nadded {n} row(s) to {tracker.path(home, 'Daily jobs')}")
+    if not args.dry_run and cfg["tracker"] == "csv":
+        gone = tracker.expire(home, cfg["expire_after_days"], cfg["priority_companies"], today)
+        if gone:
+            print(f"archived {gone} unapplied job(s) older than {cfg['expire_after_days']} days")
     elif res.jobs and cfg.get("sheet_webhook"):
         from jobhunt import net, webhook
         try:
-            reply = webhook.send(cfg["sheet_webhook"], cfg["sheet_token"], webhook.rows(res.jobs, cfg, today))
+            reply = webhook.send(cfg["sheet_webhook"], cfg["sheet_token"], webhook.rows(res.jobs, cfg, today),
+                                 expire_after_days=cfg["expire_after_days"],
+                                 keep_companies=cfg["priority_companies"])
         except (net.FetchError, ValueError) as e:
             # Keep the jobs for next time instead of marking them seen
             pipeline.forget(home, res.jobs)
@@ -119,7 +125,9 @@ def cmd_scan(args) -> int:
             print("these jobs will be offered again on the next scan.")
             return 1
         print(f"\nsheet: added {reply.get('added', 0)} row(s); "
-              f"{reply.get('skipped', 0)} already in the sheet")
+              f"{reply.get('skipped', 0)} already in the sheet; "
+              f"{reply.get('moved', 0)} applied moved to Applied; "
+              f"{reply.get('archived', 0)} older than {cfg['expire_after_days']} days archived")
     elif res.jobs:
         req_file = out_dir / f"sheet-rows-{today.isoformat()}.json"
         req_file.write_text(json.dumps(sheet.row_requests(res.jobs, cfg, today), separators=(",", ":"),
@@ -252,6 +260,31 @@ def cmd_stats(args) -> int:
     return 0
 
 
+# ---- schedule ----------------------------------------------------------------
+def cmd_schedule(args) -> int:
+    from jobhunt import schedule
+    cfg, _ = _load(args)
+    if args.action == "status":
+        print(f"scheduled scan: {schedule.status()}")
+        return 0
+    if args.action == "off":
+        print(schedule.remove())
+        return 0
+    if cfg["tracker"] == "sheet" and not cfg.get("sheet_webhook"):
+        print("note: your tracker is a Google Sheet, but the sheet receiver isn't set up yet.\n"
+              "      Scheduled scans will skip until it is. See sheet/README-apps-script.md")
+    logon = args.logon or not args.at
+    try:
+        where = schedule.install(logon=logon, at=args.at)
+    except (RuntimeError, ValueError, OSError) as e:
+        print(f"couldn't set up the schedule: {e}")
+        return 1
+    when = " and ".join(x for x in ("at log-on" if logon else "", f"daily at {args.at}" if args.at else "") if x)
+    print(f"scan scheduled {when} ({where}).")
+    print("It runs at most once a day, waits for the internet, and logs to private/logs/scan.log.")
+    return 0
+
+
 # ---- mode / doctor -----------------------------------------------------------
 def cmd_mode(args) -> int:
     cfg, home = _load(args)
@@ -345,6 +378,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("name", nargs="?", choices=config.MODES)
     s.set_defaults(fn=cmd_mode)
     sub.add_parser("doctor", help="check the setup").set_defaults(fn=cmd_doctor)
+
+    s = sub.add_parser("schedule", help="run the scan automatically on this computer")
+    s.add_argument("action", choices=["on", "off", "status"])
+    s.add_argument("--logon", action="store_true", help="when you log in (the default)")
+    s.add_argument("--at", help="also every day at this time, e.g. 08:00")
+    s.set_defaults(fn=cmd_schedule)
     return p
 
 

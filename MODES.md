@@ -37,9 +37,10 @@ AI is used where judgment or writing is needed: tailoring a resume, writing a co
 ## The tracker matters too
 
 - **CSV tracker** (`"tracker": "csv"`): the scan writes straight to files in `private/tracker/`. No agent is involved, so a scheduled scan costs nothing. Open the files in Excel, or import them into Google Sheets.
-- **Google Sheet** (`"tracker": "sheet"`): the scan prepares one update file, and an agent sends it through its Sheets connector. That costs a small, fixed amount of AI use per scan, because the agent has to pass the rows along.
+- **Google Sheet with the receiver** (`"tracker": "sheet"` plus `sheet_webhook`): the scan writes straight to your sheet through a small script inside it ([setup](sheet/README-apps-script.md)). Also no AI.
+- **Google Sheet without the receiver:** the scan prepares an update file, and an agent sends it through its Sheets connector. That costs a small amount of AI use per scan.
 
-Lean mode with the CSV tracker is the cheapest setup. Lean mode with a sheet is next.
+Lean mode with the CSV tracker or the sheet receiver, scheduled with `python -m jobhunt schedule on`, uses no AI until you pick a job.
 
 ## Rules for agents, by mode
 

@@ -112,7 +112,7 @@ def test_row_requests_insert_under_the_header_in_schema_order():
 
 # ---- CSV tracker -------------------------------------------------------------
 def test_tracker_round_trip(tmp_path):
-    assert len(tracker.init(tmp_path)) == 3 and tracker.init(tmp_path) == []
+    assert len(tracker.init(tmp_path)) == 4 and tracker.init(tmp_path) == []
     tracker.add_jobs(tmp_path, [job(company="Old Co")], cfg(), TODAY - dt.timedelta(days=1))
     tracker.add_jobs(tmp_path, [job(), job(company="Acme", title="Product Manager")], cfg(), TODAY)
     rows = tracker.read(tmp_path, "Daily jobs")
@@ -358,3 +358,56 @@ def test_webhook_rows_and_send(monkeypatch):
         webhook.send("https://script.example/exec", "secret", rows)
     with pytest.raises(ValueError):
         webhook.send("", "", rows)
+
+
+def test_expire_moves_old_unapplied_jobs_to_archive(tmp_path):
+    old, fresh = TODAY - dt.timedelta(days=20), TODAY - dt.timedelta(days=2)
+    tracker.add_jobs(tmp_path, [job(company="Stale", posted=old.isoformat(), url="s"),
+                                job(company="Amazon", posted=old.isoformat(), url="a"),
+                                job(company="Undated", posted="", url="u"),
+                                job(company="Fresh", posted=fresh.isoformat(), url="f")], cfg(), old)
+    assert tracker.expire(tmp_path, 0, [], TODAY) == 0            # 0 = never
+    moved = tracker.expire(tmp_path, 14, ["Amazon"], TODAY)
+    # "Undated" falls back to its Scanned date, which is also 20 days ago
+    assert moved == 2
+    assert sorted(r["Company"] for r in tracker.read(tmp_path, "Daily jobs")) == ["Amazon", "Fresh"]
+    assert sorted(r["Company"] for r in tracker.read(tmp_path, "Archive")) == ["Stale", "Undated"]
+    assert tracker.expire(tmp_path, 14, ["Amazon"], TODAY) == 0    # idempotent
+
+
+def test_webhook_sends_tidy_settings(monkeypatch):
+    from jobhunt import webhook
+    sent = {}
+
+    class Resp:
+        def read(self): return b'{"ok": true, "added": 0, "archived": 2}'
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake(req, timeout):
+        sent.update(json.loads(req.data))
+        return Resp()
+
+    monkeypatch.setattr(webhook.urllib.request, "urlopen", fake)
+    webhook.send("https://x/exec", "t", [], expire_after_days=14, keep_companies=["Amazon"])
+    assert sent["expire_after_days"] == 14 and sent["keep_companies"] == ["Amazon"]
+
+
+# ---- scheduler ---------------------------------------------------------------
+def test_schedule_definitions():
+    import xml.dom.minidom
+    from jobhunt import schedule
+    ps = schedule.windows_script(logon=True, at="08:00")
+    assert "-AtLogOn" in ps and "-Daily -At '08:00'" in ps and "@($logon, $daily)" in ps
+    assert "scheduled_scan.py" in ps and "$logon.Delay = 'PT1M'" in ps
+    assert "@($daily)" in schedule.windows_script(logon=False, at="7:30")
+    plist = schedule.mac_plist(logon=True, at="08:15")
+    xml.dom.minidom.parseString(plist)                       # well-formed
+    assert "<key>RunAtLoad</key><true/>" in plist and "<integer>15</integer>" in plist
+    lines = schedule.cron_lines(logon=True, at="08:00")
+    assert lines[0].startswith("@reboot") and lines[1].startswith("0 8 * * *")
+    assert all(schedule.CRON_TAG in ln for ln in lines)
+    with pytest.raises(ValueError):
+        schedule.cron_lines(logon=False, at="25:00")
+    with pytest.raises(ValueError):
+        schedule.install(logon=False, at=None)
