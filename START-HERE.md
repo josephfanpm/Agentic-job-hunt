@@ -1,8 +1,49 @@
 # Start here: setup without coding experience
 
-You don't need to be a programmer to use this. If you can install an app and copy and paste, you can set it up in about 20 minutes. This page walks through every click.
+You don't need to be a programmer to use this. There are two ways to set it up:
 
-You don't need an AI tool to start. Finding jobs, ranking them, finding people to contact and checking your resume all work without one. Step 6 covers adding AI later.
+- **Let an AI app do it (about 10 minutes).** Install one app, paste one message, and answer its questions. See below.
+- **Do it yourself (about 20 minutes).** Follow Steps 1 to 5. Every click is written out.
+
+After setup, the daily job scan runs without AI. You only need AI for writing tailored resumes, cover letters and messages.
+
+---
+
+## The fastest way: let an AI app set it up
+
+You need an AI app that can work with files on your computer. A regular chat website can't do this. Any of these works, and none needs a code editor or other extra software:
+
+| App | Cost | Sign in with |
+|---|---|---|
+| [Google Antigravity](https://antigravity.google) | Free, with a weekly limit | A Google account |
+| [ChatGPT desktop app](https://openai.com/chatgpt/download/), **Codex** mode | Free, with a small limit. More with Plus (about $20 a month) | A ChatGPT account |
+| [Claude desktop app](https://claude.com/download), **Code** tab | Claude Pro (about $20 a month) or higher | A Claude account |
+
+Free plans are plenty for setup. If you later want AI to tailor a resume for every job, a free plan may run out within the week. A paid plan, or Option B in Step 6, covers that.
+
+Free limits change often, so check the app's pricing page if one stops working.
+
+**1. Make a folder.** Create an empty folder called `job-hunt` in your Documents folder. Put your resume PDF in it.
+
+**2. Open the folder in the app.** Install the app, sign in, and choose **Open folder** (or the folder picker in the Codex mode or Code tab). Pick the `job-hunt` folder.
+
+**3. Paste this message and press Enter:**
+
+```
+Set up the job search tool from https://github.com/josephfanpm/agentic-job-hunt in this folder. I'm not a programmer, so tell me what each step does in one plain sentence and do the work yourself.
+
+1. Check that Python 3 is installed. If it isn't, install it, or tell me exactly what to click.
+2. Download the project into this folder. Use git if it's installed; otherwise download the ZIP and unzip it.
+3. Install its requirements with: python -m pip install -r requirements.txt
+4. Read START-HERE.md and AGENTS.md.
+5. Ask me the setup questions from Step 5 of START-HERE.md one at a time, in plain language. Find my resume PDF in this folder. Then run "python -m jobhunt init" with my answers as flags plus --yes, so I don't have to use the interactive setup.
+6. Run "python -m jobhunt doctor" and fix anything it reports. Then run "python -m jobhunt scan" and show me my top 10 jobs.
+7. Ask me if I want the scan to run by itself every day. If I say yes, run "python -m jobhunt schedule on".
+```
+
+**4. Allow its steps.** The app asks before it runs a command or changes a file. That's normal: click **Allow** or **Run**. If it asks you something you're unsure about, it's fine to say so.
+
+If the app gets stuck, finish with the matching step below. For example, if Python won't install, do Step 1 yourself and then tell the app to carry on.
 
 ---
 
@@ -96,9 +137,23 @@ Your personal files stay in the `private` folder on your computer and are never 
 
 AI writes the tailored resumes, cover letters, messages and interview practice. Pick whichever fits you:
 
-**Option A: the Claude desktop app (does the most for you).** Install the [Claude app](https://claude.com/download) for Mac or Windows and open its **Code** tab. Point it at the project folder, then ask in plain English, for example: *"Read AGENTS.md, then tailor my resume for the Acme job in today's list."* It runs the commands above for you, edits files and can update a Google Sheet.
+**Option A: an AI app that works with your files (does the most for you).** Use any app from [the table at the top](#the-fastest-way-let-an-ai-app-set-it-up): Google Antigravity (free), ChatGPT's Codex mode (free or paid) or Claude's Code tab (paid). Open the project folder in it, then ask in plain English, for example: *"Read AGENTS.md, then tailor my resume for the Acme job in today's list."* It runs the commands above for you, edits files and can update a Google Sheet.
 
-**Option B: any AI chat (no install).** Use Claude, ChatGPT or another chat site. It can't run commands or open your files, so you do those parts:
+Already use VS Code? The Claude Code, Codex and GitHub Copilot extensions work there too. Copilot has a free plan with a small monthly limit. You don't need VS Code if you use one of the apps above.
+
+**Cheapest pay-as-you-go option (for people comfortable with settings).** Install [VS Code](https://code.visualstudio.com) and its free [Cline](https://cline.bot) extension. Then connect Cline to a low-cost open model:
+
+- **[DeepSeek](https://platform.deepseek.com):** add a few dollars of credit and paste your API key into Cline's settings. Tailoring a resume costs a few cents.
+- **[OpenRouter](https://openrouter.ai):** one account for many models. Some are free with a daily limit; free ones can be slow at busy times.
+
+Keep in mind:
+- Your resume and profile go to the model's company. DeepSeek's own service stores data in China.
+- Smaller models make more mistakes on multi-step work. Read tailored resumes closely, and run `python -m jobhunt check` before you send one.
+- Running a model on your own computer (for example with Ollama) is free and private. But it needs a powerful computer, and the small models a normal laptop can run often fail at this kind of work.
+
+If you'd rather not set up an API key, Google Antigravity is free with just a Google account.
+
+**Option B: any AI chat (no install, works on free plans).** Use Claude, ChatGPT, Gemini or another chat site. It can't run commands or open your files, so you do those parts:
 1. Open the instruction file you need from the `prompts` folder, such as `prompts/tailor-resume.md`, and copy its text into the chat.
 2. Attach `private/profile.md` and the job description, which the scan saved in `private/jds/`.
 3. Copy the result back out.
