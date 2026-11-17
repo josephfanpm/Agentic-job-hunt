@@ -32,5 +32,5 @@
     "amazon": false,
     "jobspy": false
   },
-  "linkedin": {"manager_titles": [], "peer_titles": []}
+  "linkedin": {"manager_titles": [], "peer_titles": [], "company_aliases": {}}
 }

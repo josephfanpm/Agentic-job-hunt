@@ -70,4 +70,6 @@ Tell the user, in three or four short lines:
 - that each morning they pick 2–5 jobs and ask you, for example, "Tailor my resume and draft a message for the Acme job"
 - that you never send messages or submit anything without asking them first
 
+Then suggest one more step: download their LinkedIn data so you can check who they know at each company before they apply. Give them the clicks from "Add your LinkedIn data" in [START-HERE.md](../START-HERE.md); when the full archive arrives, run `python -m jobhunt network build "<folder>"` for them.
+
 To hand the day-to-day work to another agent, such as Muse or Grok, give it the kickoff message in [kickoff.md](kickoff.md).

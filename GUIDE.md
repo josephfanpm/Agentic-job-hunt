@@ -121,11 +121,25 @@ The check reads the PDF the way an applicant tracking system does. It fails on t
 
 ### Step 6. Mine your LinkedIn network
 
-Request your data from LinkedIn: **Settings & Privacy → Data privacy → Download your data → larger archive**. It takes about 30 minutes. Put `Connections.csv` and `messages.csv` in `private/`, then say:
+Request your data from LinkedIn on a computer: **Me → Settings & Privacy → Data privacy → Get a copy of your data**, and choose the larger archive. LinkedIn emails a first file within minutes and the full archive within 24 hours; wait for the full one, and download it within 72 hours. Unzip it anywhere, then index it:
+
+```bash
+python -m jobhunt network build "<the unzipped folder>"
+```
+
+This reads your connections, messages, endorsements, recommendations and invitations into `private/network/`. From then on, before any application:
+
+```bash
+python -m jobhunt network find "Company"
+```
+
+lists everyone you know there, warmest first (people who replied to you, then people who endorsed or recommended you), plus invitations you sent that they haven't accepted. If a company goes by several names, add them to `linkedin.company_aliases` in your config.
+
+To pick who to reach out to across your whole network, say:
 
 > Run prompts/network-scoring.md. My goal is [your goal].
 
-You get the strongest matches among your connections, each with a reason and an opener, plus the groups missing from your network.
+You get the strongest matches among your connections, each with a reason and an opener, plus the groups missing from your network. Rebuild the index whenever you download a new export.
 
 ### Step 7. Schedule the daily scan
 
@@ -145,7 +159,7 @@ The list stays fresh on its own. Applied jobs move to the Applied tab, and jobs 
 
 1. **Open your tracker.** Read today's new rows.
 2. **Pick 2–5 jobs.** Ignore the rest. A few strong fits beat mass-applying.
-3. **Find a person.** Each job has three LinkedIn search links: recruiters, hiring managers and peers. Open one, set LinkedIn's *Current company* filter, and pick someone. For any other company: `python -m jobhunt people "Company" "Job title"`.
+3. **Find a person.** First run `python -m jobhunt network find "Company"`: someone you already know there beats any stranger. If nobody turns up, each job has three LinkedIn search links: recruiters, hiring managers and peers. Open one, set LinkedIn's *Current company* filter, and pick someone. For any other company: `python -m jobhunt people "Company" "Job title"`.
 4. **See the gap** before tailoring: `python -m jobhunt check private/resume.pdf --jd "private/jds/<Company>__<Title>.txt"`. The scan saved each job description there.
 5. **Hand the jobs to an agent:**
    > Tailor and apply to Jobber and Acme from today's list. Draft a message to [name, title] for each.

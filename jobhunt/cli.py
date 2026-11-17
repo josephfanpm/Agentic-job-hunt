@@ -164,6 +164,31 @@ def cmd_people(args) -> int:
     return 0
 
 
+# ---- network -----------------------------------------------------------------
+def cmd_network(args) -> int:
+    from jobhunt import network
+    cfg, home = _load(args)
+    if args.action == "build":
+        if not args.names:
+            print("give the folder LinkedIn sent you: network build \"<export folder>\"")
+            return 2
+        n = network.build(Path(args.names[0]), home)
+        print(f"{n['connections']} connections, {n['messaged']} you've messaged, "
+              f"{n['endorsed_or_recommended']} endorsed or recommended you, "
+              f"{n['pending']} invitations not accepted yet.")
+        print(f"saved to {n['folder']}. Look up a company: python -m jobhunt network find \"Company\"")
+        return 0
+    if not args.names:
+        print("give at least one company: network find \"Company\"")
+        return 2
+    aliases = cfg["linkedin"].get("company_aliases", {})
+    for i, name in enumerate(args.names):
+        if i:
+            print()
+        print(network.plain(network.find(name, home, aliases)))
+    return 0
+
+
 # ---- boards ------------------------------------------------------------------
 def cmd_boards(args) -> int:
     from jobhunt import discover
@@ -356,6 +381,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--peer", action="append", help="peer title to search (repeatable)")
     s.add_argument("--big", action="store_true", help="large company: narrow recruiters to tech")
     s.set_defaults(fn=cmd_people)
+
+    s = sub.add_parser("network", help="who you know at a company, from your LinkedIn export")
+    s.add_argument("action", choices=["build", "find"])
+    s.add_argument("names", nargs="*", help="build: the export folder; find: one or more companies")
+    s.set_defaults(fn=cmd_network)
 
     s = sub.add_parser("boards", help="find and track company job boards")
     s.add_argument("action", choices=["add", "list"]), s.add_argument("names", nargs="*")

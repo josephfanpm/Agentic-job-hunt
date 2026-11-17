@@ -2,7 +2,7 @@
 
 Either agent can submit. Work through the checklist in [AGENTS.md](../AGENTS.md#auto-apply-checklist) first.
 
-1. **Referral check.** Does the user know anyone at the company (the Network tab, or a Name match in their connections)? If so, stop and ask whether to request a referral first. Most referral systems want the referrer to submit before you apply, using the same email. If the user has already applied, the referrer can flag them to the recruiter directly.
+1. **Referral check.** Run `python -m jobhunt network find "Company"` and check the Network tab. Does the user know anyone at the company? If so, stop and ask whether to request a referral first. Most referral systems want the referrer to submit before you apply, using the same email. If the user has already applied, the referrer can flag them to the recruiter directly.
 2. **Tailor** using [tailor-resume.md](tailor-resume.md).
 3. **Fill the form** with facts from `private/profile.md` only.
    - **Sponsorship or work-authorization questions:** ask the user. Answers depend on the visa type and how each company words the question.

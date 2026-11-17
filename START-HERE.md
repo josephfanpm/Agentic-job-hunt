@@ -142,10 +142,20 @@ Your personal files stay in the `private` folder on your computer and are never 
 |---|---|
 | Find new jobs | `python -m jobhunt scan` |
 | Check your resume before sending it | `python -m jobhunt check my-resume.pdf` |
+| See who you already know at a company | `python -m jobhunt network find "Company"` (after you add your LinkedIn data; see below) |
 | Find people to contact at a company | `python -m jobhunt people "Company" "Job title"` |
 | Record that you applied | `python -m jobhunt applied "Company"` |
 | See who to follow up with today | `python -m jobhunt due` |
 | Add a company to watch | `python -m jobhunt boards add "Company"` |
+
+**Add your LinkedIn data (5 minutes of clicking, then up to a day of waiting).** A referral from someone you know beats any cold application, so the tool should know who you know.
+
+1. On a computer (the phone app can't do this), open LinkedIn and click **Me** → **Settings & Privacy** → **Data privacy** → **Get a copy of your data**.
+2. Choose the larger archive (the first option, with everything), then **Request archive**.
+3. LinkedIn emails you twice: a first file within minutes, and the full archive within 24 hours. Wait for the full one. The download link works for 72 hours.
+4. Unzip it, then paste: `python -m jobhunt network build "<the unzipped folder>"`
+
+Now `python -m jobhunt network find "Company"` lists everyone you know there, warmest first, plus invitations they haven't accepted. Run it before you apply anywhere.
 
 ## Step 6. Add an AI assistant (optional)
 

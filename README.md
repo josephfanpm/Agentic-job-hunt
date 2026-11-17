@@ -53,6 +53,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 | `python -m jobhunt scan` | Find, filter and rank new jobs (`--dry-run` to preview) |
 | `python -m jobhunt boards add "Company"` | Find and track a company's job board |
 | `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers |
+| `python -m jobhunt network find "Company"` | Who you already know there, from your LinkedIn data export |
 | `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap |
 | `python -m jobhunt applied "Company" --channel Referral` | Log an application |
 | `python -m jobhunt due` | Follow-ups due today |

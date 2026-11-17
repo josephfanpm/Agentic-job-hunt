@@ -16,6 +16,7 @@ These need no AI, so never do them by hand:
 | Need | Run |
 |---|---|
 | New jobs, filtered, ranked, deduped | `python -m jobhunt scan` |
+| Who the user already knows at a company | `python -m jobhunt network find "Company"` (run it before every application and outreach draft) |
 | LinkedIn searches for a job | `python -m jobhunt people "Company" "Title"` |
 | Resume pre-flight and keyword gap | `python -m jobhunt check resume.pdf --jd <jd file>` |
 | A company's job board | `python -m jobhunt boards add "Company"` |

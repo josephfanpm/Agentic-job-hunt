@@ -53,7 +53,9 @@ DEFAULTS: dict = {
         "jobspy": False,
     },
     "jobspy": {"searches": [], "sites": ["indeed", "linkedin", "zip_recruiter"], "hours_old": 30},
-    "linkedin": {"manager_titles": [], "peer_titles": []},   # empty = derived from titles.include
+    # manager/peer titles: empty = derived from titles.include
+    # company_aliases: extra names for `network find`, e.g. {"Optum": ["optum", "unitedhealth"]}
+    "linkedin": {"manager_titles": [], "peer_titles": [], "company_aliases": {}},
     "files": {"name_prefix": ""},   # e.g. "Ada_Lovelace" -> Ada_Lovelace_Resume_Company.pdf
 }
 
