@@ -2,7 +2,9 @@
 
 An ATS doesn't see your layout. It pulls the text out of the PDF in stored
 order and looks for contact details, section headings, dates and keywords.
-This check does the same and reports what a parser would trip on.
+This check does the same and reports what a parser would trip on. It also
+reads each bullet the way a recruiter skims it: does it carry a number, does
+it open with an action, and is every listed tool shown in a bullet.
 
 FAIL = fix before sending. WARN = look at it. Requires: pip install pymupdf
 """
@@ -25,6 +27,22 @@ _SECTIONS = {
     "education": ["education", "education and training", "academic background"],
 }
 
+BULLET_CHARS = "•◦▪▸►●○■–-*·"
+# Openers that describe a duty instead of an action and its result.
+WEAK_OPENERS = ("responsible for", "helped", "helping", "assisted", "worked on", "participated in",
+                "involved in", "tasked with", "duties included", "in charge of")
+# Filler that tells a recruiter nothing they can check.
+FILLER = ("team player", "various", "hard-working", "hardworking", "detail-oriented", "self-starter",
+          "go-getter", "results-driven", "results-oriented", "think outside the box", "synergy",
+          "proven track record", "fast-paced environment")
+_NUMBER_WORDS = re.compile(r"\b(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|"
+                           r"dozens?|hundreds?|thousands?|millions?|billions?|doubled|tripled|halved)\b", re.I)
+_YEAR = re.compile(r"\b(?:19|20)\d{2}\b")
+# Lines that list tools. Languages, Licensure and Interests aren't tools to demonstrate.
+_TOOL_LINE = re.compile(r"^\s*(?:tools|skills|technical skills|software skills|software|technologies|"
+                        r"frameworks|tech stack)\s*:\s*(.+)$", re.I)
+METRIC_TARGET = 0.8
+
 
 @dataclass
 class Report:
@@ -42,18 +60,27 @@ class Report:
 
 def _lines(page) -> list[dict]:
     """Visual lines in stored order, with geometry and font, bullets removed."""
-    rows = []
+    rows, marks = [], []
     for block in page.get_text("dict")["blocks"]:
         for ln in block.get("lines", []):
+            first = next((sp["text"].strip() for sp in ln["spans"] if sp["text"].strip()), "")
             spans = [sp for sp in ln["spans"] if sp["text"].strip()
                      and any(ch.isalnum() for ch in sp["text"])]
             if not spans:
+                if first and first in BULLET_CHARS:
+                    marks.append(ln["bbox"])   # a bullet glyph stored as its own line
                 continue
             rows.append({
-                "x0": spans[0]["bbox"][0], "x1": ln["bbox"][2], "y0": ln["bbox"][1],
+                "bullet": first[:1] in BULLET_CHARS and (len(first) == 1 or first[1] == " "),
+                "x0": spans[0]["bbox"][0], "x1": ln["bbox"][2], "y0": ln["bbox"][1], "y1": ln["bbox"][3],
                 "text": " ".join(sp["text"].strip() for sp in spans),
                 "size": round(spans[0]["size"], 1), "bold": bool(spans[0]["flags"] & 16),
             })
+    for _, my0, mx1, my1 in marks:
+        for r in rows:
+            if my0 < r["y1"] and my1 > r["y0"] and r["x0"] - 30 < mx1 <= r["x0"] + 2:
+                r["bullet"] = True
+                break
     return rows
 
 
@@ -68,6 +95,74 @@ def text_fails(text: str, pno: int = 1) -> list[str]:
     if bad > 3:
         out.append(f"page {pno}: {bad} unreadable characters; the font has no text mapping")
     return out
+
+
+def bullets(rows: list[dict]) -> list[str]:
+    """Join each bulleted line with the lines that wrap under it."""
+    out: list[str] = []
+    cur: dict | None = None
+    for r in rows:
+        if r["bullet"]:
+            cur = dict(r)
+            out.append(r["text"].lstrip(BULLET_CHARS + " "))
+        elif (cur and not r["bold"] and r["size"] == cur["size"] and cur["x0"] - 4 < r["x0"] < cur["x0"] + 16
+              and 0 < r["y0"] - cur["y0"] < 2.2 * r["size"]):
+            out[-1] += " " + r["text"]
+            cur["y0"] = r["y0"]
+        else:
+            cur = None
+    return out
+
+
+def has_number(text: str) -> bool:
+    """A measured result: a digit that isn't only a year, or a number word."""
+    return bool(re.search(r"\d", _YEAR.sub("", text)) or _NUMBER_WORDS.search(text))
+
+
+def _filler_in(text: str) -> list[str]:
+    low = text.lower()
+    return [f for f in FILLER if re.search(rf"\b{re.escape(f)}\b", low)]
+
+
+def bullet_flags(text: str) -> list[str]:
+    """What a recruiter skimming this bullet would miss."""
+    flags = [] if has_number(text) else ["no number"]
+    if text.lower().startswith(WEAK_OPENERS):
+        flags.append("weak opener")
+    return flags + [f"filler '{f}'" for f in _filler_in(text)]
+
+
+def listed_tools(full_text: str) -> list[tuple[str, list[str]]]:
+    """Items from a Tools or Skills line, each with the names that count as using it.
+
+    'SQL (BigQuery)' counts as shown if either SQL or BigQuery appears.
+    """
+    items = []
+    for line in full_text.splitlines():
+        m = _TOOL_LINE.match(line)
+        if not m:
+            continue
+        for raw in re.split(r"[,;|•]", m.group(1)):
+            raw = raw.strip(" .")
+            if not raw:
+                continue
+            names = [raw.split("(")[0]] + re.findall(r"\(([^)]*)\)", raw)
+            items.append((raw, [n.strip() for name in names for n in name.split("/") if n.strip()]))
+    return items
+
+
+def tools_not_shown(full_text: str) -> list[str]:
+    """Listed tools that nothing else on the page mentions (bullets, project lines)."""
+    body = "\n".join(ln for ln in full_text.splitlines() if not _TOOL_LINE.match(ln))
+    return [raw for raw, names in listed_tools(full_text)
+            if not any(re.search(rf"(?<!\w){re.escape(n)}(?!\w)", body, re.I) for n in names)]
+
+
+def bullet_report(path: str | Path) -> list[tuple[str, list[str]]]:
+    """Every bullet in the PDF with its flags, for `check --bullets`."""
+    import pymupdf
+    with pymupdf.open(path) as doc:
+        return [(b, bullet_flags(b)) for page in doc for b in bullets(_lines(page))]
 
 
 def extract_text(path: str | Path) -> str:
@@ -87,6 +182,8 @@ def check(path: str | Path, max_pages: int = 1, jd_text: str | None = None,
         if doc.page_count > max_pages:
             rep.fails.append(f"{doc.page_count} pages (limit {max_pages})")
         full_text = ""
+        all_bullets: list[str] = []
+        top_third = ""
         for pno, page in enumerate(doc, start=1):
             text = page.get_text()
             full_text += text + "\n"
@@ -94,6 +191,9 @@ def check(path: str | Path, max_pages: int = 1, jd_text: str | None = None,
             rows = _lines(page)
             if not rows:
                 continue
+            all_bullets += bullets(rows)
+            if pno == 1:
+                top_third = "\n".join(r["text"] for r in rows if r["y0"] < page.rect.height / 3)
             right = max(r["x1"] for r in rows)
             for i, (prev, cur) in enumerate(zip(rows, rows[1:])):
                 if i == len(rows) - 2 and letter:
@@ -135,11 +235,48 @@ def check(path: str | Path, max_pages: int = 1, jd_text: str | None = None,
     if not letter and not _DATE_RANGE.search(full_text):
         rep.warnings.append("no date ranges like 'Jan 2022 – Present' found; parsers use them to build your timeline")
 
+    if not letter:
+        _bullet_checks(rep, all_bullets, full_text)
     rep.info.append(f"{len(full_text.split())} words, {rep.pages} page(s)")
     if jd_text:
         from jobhunt import keywords
-        rep.keywords = keywords.coverage(jd_text, full_text, ignore=(company,) if company else ())
+        ignore = (company,) if company else ()
+        rep.keywords = keywords.coverage(jd_text, full_text, ignore=ignore)
+        if not letter and top_third:
+            top = keywords.coverage(jd_text, top_third, ignore=ignore)["covered"]
+            rep.keywords["top_third"] = [t for t in rep.keywords["covered"] if t in top]
     return rep
+
+
+def _short(text: str, words: int = 6) -> str:
+    parts = text.split()
+    return " ".join(parts[:words]) + ("…" if len(parts) > words else "")
+
+
+def _bullet_checks(rep: Report, items: list[str], full_text: str) -> None:
+    """Recruiter-skim checks on the bullets. All are warnings: the person decides."""
+    if not items:
+        rep.info.append("no bullet points found, so the bullet checks were skipped")
+        return
+    numbered = [b for b in items if has_number(b)]
+    share = len(numbered) / len(items)
+    rep.info.append(f"{len(items)} bullets, {len(numbered)} with a number ({round(100 * share)}%)")
+    if share < METRIC_TARGET:
+        missing = [_short(b) for b in items if not has_number(b)]
+        rep.warnings.append(
+            f"only {len(numbered)} of {len(items)} bullets have a number (aim for 80%+). Add one only where "
+            "you have a real, sourced result. Without a number: " + "; ".join(missing))
+    weak = [_short(b, 4) for b in items if b.lower().startswith(WEAK_OPENERS)]
+    if weak:
+        rep.warnings.append("bullets that open with a duty, not an action (lead with a verb such as "
+                            "Launched, Cut or Grew): " + "; ".join(weak))
+    filler = sorted({f for b in items for f in _filler_in(b)})
+    if filler:
+        rep.warnings.append("filler a recruiter can't check: " + ", ".join(f"'{f}'" for f in filler))
+    unshown = tools_not_shown(full_text)
+    if unshown:
+        rep.warnings.append("listed but never shown in a bullet: " + ", ".join(unshown)
+                            + ". Name a tool in a bullet where you really used it, or drop it from the list")
 
 
 def render(rep: Report) -> str:
@@ -151,5 +288,9 @@ def render(rep: Report) -> str:
         if k["missing"]:
             out.append("      not in resume: " + ", ".join(k["missing"]))
             out.append("      Add one only where you have real experience behind it.")
+        if "top_third" in k:
+            top = k["top_third"]
+            out.append(f"info: {len(top)} of the {len(k['covered'])} matched terms sit in the top third of page 1, "
+                       "where a recruiter's first few seconds go" + (": " + ", ".join(top) if top else ""))
     out.append("OK" if rep.ok else f"{len(rep.fails)} problem(s) to fix")
     return "\n".join(out)

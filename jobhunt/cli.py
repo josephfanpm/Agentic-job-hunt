@@ -164,9 +164,39 @@ def cmd_check(args) -> int:
         head = jd.splitlines()[:3]   # files saved by `scan` start: title, company, link
         if len(head) == 3 and head[2].startswith("http"):
             company = head[1].strip()
+    if args.bullets:
+        for text, flags in ats.bullet_report(args.pdf):
+            print(("  ok    " if not flags else "  FIX   ") + text + ("" if not flags else f"  [{', '.join(flags)}]"))
+        return 0
     rep = ats.check(args.pdf, max_pages=args.max_pages, jd_text=jd, letter=args.letter, company=company)
     print(ats.render(rep))
     return 0 if rep.ok else 1
+
+
+# ---- terms -------------------------------------------------------------------
+def _jd_company(text: str) -> str:
+    head = text.splitlines()[:3]   # files saved by `scan` start: title, company, link
+    return head[1].strip() if len(head) == 3 and head[2].startswith("http") else ""
+
+
+def cmd_terms(args) -> int:
+    from jobhunt import keywords
+    files = [Path(f) for f in args.files]
+    if len(files) < args.min:
+        print(f"Give at least {args.min} job descriptions (got {len(files)}). Five or more works best.")
+        return 1
+    postings = []
+    for f in files:
+        text = f.read_text(encoding="utf-8", errors="replace")
+        postings.append((text, _jd_company(text)))
+    common = keywords.common_terms(postings, min_postings=args.min)
+    if not common:
+        print(f"No term appears in {args.min}+ of these {len(files)} postings.")
+        return 0
+    print(f"Terms in {args.min}+ of {len(files)} postings (use the ones your experience backs up):")
+    for term, n in common:
+        print(f"  {n:>3}  {term}")
+    return 0
 
 
 # ---- people ------------------------------------------------------------------
@@ -429,7 +459,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--jd", help="job description text file, for a keyword gap report")
     s.add_argument("--company", help="employer name, left out of the keyword report")
     s.add_argument("--letter", action="store_true", help="a cover letter: skip resume-only checks")
+    s.add_argument("--bullets", action="store_true", help="list every bullet and what it's missing")
     s.set_defaults(fn=cmd_check)
+
+    s = sub.add_parser("terms", help="terms shared by several job descriptions, for a base resume")
+    s.add_argument("files", nargs="+", help="job description text files, such as private/jds/*.txt")
+    s.add_argument("--min", type=int, default=3, help="how many postings a term must appear in (default 3)")
+    s.set_defaults(fn=cmd_terms)
 
     s = sub.add_parser("people", help="LinkedIn searches for a company")
     s.add_argument("company"), s.add_argument("title", nargs="?")

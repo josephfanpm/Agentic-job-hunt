@@ -19,7 +19,8 @@ These need no AI, so never do them by hand:
 | The jobs the user picked | `python -m jobhunt picks` (when they say "work my picks", follow [prompts/work-picks.md](prompts/work-picks.md)) |
 | Who the user already knows at a company | `python -m jobhunt network find "Company"` (run it before every application and outreach draft) |
 | LinkedIn searches for a job | `python -m jobhunt people "Company" "Title"` |
-| Resume pre-flight and keyword gap | `python -m jobhunt check resume.pdf --jd <jd file>` |
+| Resume pre-flight, bullet checks and keyword gap | `python -m jobhunt check resume.pdf --jd <jd file>` |
+| Terms shared across postings, for a base resume | `python -m jobhunt terms private/jds/*.txt` |
 | A company's job board | `python -m jobhunt boards add "Company"` |
 | Requests that build the Google Sheet | `python -m jobhunt sheet` |
 | Log an application (CSV tracker) | `python -m jobhunt applied "Company" "Role" --channel Referral` |

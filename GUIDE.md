@@ -117,7 +117,9 @@ tectonic private/resume.tex
 python -m jobhunt check private/resume.pdf
 ```
 
-The check reads the PDF the way an applicant tracking system does. It fails on things that break parsing: more than one page, fused letters ("staffing" read as "sta?ing"), no email in the text, a scanned image with no text. It warns about missing section headings, multi-column layouts and images.
+The check reads the PDF the way an applicant tracking system does. It fails on things that break parsing: more than one page, fused letters ("staffing" read as "sta?ing"), no email in the text, a scanned image with no text. It warns about missing section headings, multi-column layouts and images. It also reads your bullets the way a recruiter skims them, and warns when fewer than 80% carry a number, when a bullet opens with a duty ("Responsible for"), when it uses filler ("team player"), or when a tool on your list never shows up in a bullet. `--bullets` lists each bullet with what it's missing. The README's [Resume rules, and why](README.md#resume-rules-and-why) explains each rule.
+
+Building the base resume for a role? Once the scan has saved five or more job descriptions, run `python -m jobhunt terms private/jds/*.txt` to see the terms that three or more of them share.
 
 ### Step 6. Mine your LinkedIn network
 

@@ -105,3 +105,20 @@ def coverage(jd: str, resume: str, top: int = 20, ignore: tuple[str, ...] = ()) 
         (covered if needle in hay else missing).append(term)
     pct = round(100 * len(covered) / len(terms)) if terms else 0
     return {"terms": terms, "covered": covered, "missing": missing, "percent": pct}
+
+
+def common_terms(postings: list[tuple[str, str]], min_postings: int = 3, top: int = 30) -> list[tuple[str, int]]:
+    """Terms that several postings for the same kind of role share.
+
+    `postings` holds (job description, company) pairs. A term counts once per
+    posting. Terms most postings share describe the role itself, not one
+    company's wording, so they belong in a base resume (where true).
+    """
+    seen: Counter = Counter()
+    shown: dict[str, str] = {}
+    for jd, company in postings:
+        terms = extract_terms(jd, top=top, ignore=(company,) if company else ())
+        for key in {" ".join(_stem(w) for w in t.split()): t for t in terms}.items():
+            seen[key[0]] += 1
+            shown.setdefault(key[0], key[1])
+    return sorted(((shown[k], n) for k, n in seen.items() if n >= min_postings), key=lambda x: (-x[1], x[0]))

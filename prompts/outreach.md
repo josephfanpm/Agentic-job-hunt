@@ -37,5 +37,3 @@ Sending the wrong version to the wrong person reads as generic or transactional,
 - One number at most.
 - No "I hope this finds you well" or "great to connect".
 - Follow up once after 7 days, then let it go.
-
-The method follows Mikelle's [UNLISTED](https://mikellecareers.com) networking guide.

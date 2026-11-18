@@ -226,6 +226,67 @@ def test_keyword_report_in_check(tmp_path):
     assert "not in resume" in ats.render(rep)
 
 
+
+def make_bulleted(path, bullets, extra=()):
+    """A resume with real bullet glyphs; each bullet wraps inside a narrow box."""
+    doc = pymupdf.open()
+    page = doc.new_page()
+    y = 72
+    for ln in GOOD[:6]:
+        if ln:
+            page.insert_text((72, y), ln, fontsize=10)
+        y += 16
+    for b in bullets:
+        page.insert_text((72, y + 10), "\u2022", fontsize=10)
+        used = page.insert_textbox(pymupdf.Rect(84, y, 520, y + 60), b, fontsize=10)
+        y += 60 - used + 6
+    for ln in [*extra, "Education", "MBA, Example University", "2019"]:
+        page.insert_text((72, y + 10), ln, fontsize=10)
+        y += 16
+    doc.save(path)
+    return path
+
+
+def test_bullets_join_wrapped_lines_and_get_flagged(tmp_path):
+    long = ("Launched a marketplace for home-care agencies that grew weekly bookings 40% across three "
+            "regions in one year, using A/B tests and SQL analysis of every funnel step")
+    pdf = make_bulleted(tmp_path / "b.pdf", [
+        long, "Responsible for the roadmap and various stakeholder updates",
+        "Helped the team ship a new onboarding flow"], extra=["Tools: SQL, Figma (FigJam), Tableau"])
+    got = ats.bullet_report(pdf)
+    assert [b for b, _ in got][0] == long
+    assert got[0][1] == []
+    assert set(got[1][1]) == {"no number", "weak opener", "filler 'various'"}
+    rep = ats.check(pdf)
+    text = " ".join(rep.warnings)
+    assert "only 1 of 3 bullets have a number" in text
+    assert "open with a duty" in text and "'various'" in text
+    assert "never shown in a bullet: Figma (FigJam), Tableau" in text   # SQL is in a bullet
+    assert rep.ok, ats.render(rep)
+
+
+def test_numbers_and_tools():
+    assert ats.has_number("Cut costs 20%") and ats.has_number("from two steps to one")
+    assert not ats.has_number("Launched the app (March 2023)")
+    assert ats.listed_tools("Tools: SQL (BigQuery), A/B testing\nLanguages: English") == [
+        ("SQL (BigQuery)", ["SQL", "BigQuery"]), ("A/B testing", ["A", "B testing"])]
+    assert ats.tools_not_shown("Ran BigQuery models\nTools: SQL (BigQuery), Looker") == ["Looker"]
+
+
+def test_top_third_terms_in_keyword_report(tmp_path):
+    jd = "Own experimentation. Experimentation and SQL daily. SQL for pricing. Pricing pages."
+    rep = ats.check(make_pdf(tmp_path / "ok.pdf", GOOD), jd_text=jd)
+    assert "SQL" in rep.keywords["top_third"]
+    assert "top third of page 1" in ats.render(rep)
+
+
+def test_common_terms_across_postings():
+    jds = [("Acme wants SQL and SQL dashboards. Roadmap roadmap.", "Acme"),
+           ("Beta needs SQL, SQL. Pricing pricing.", "Beta"),
+           ("Gamma: SQL SQL and roadmap roadmap.", "Gamma")]
+    got = dict(keywords.common_terms(jds, min_postings=2))
+    assert got["SQL"] == 3 and got["roadmap"] == 2 and "pricing" not in got
+
 # ---- keywords ----------------------------------------------------------------
 def test_extract_terms_skips_filler_boilerplate_and_company():
     jd = ("Acme builds a marketplace. Acme wants marketplace growth. You have strong experience with "

@@ -37,7 +37,7 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 | **Scan** | Reads company job boards (Greenhouse, Lever, Ashby, Workable), remote boards (Remote OK, Remotive, We Work Remotely, Himalayas), Hacker News "Who is hiring?", Amazon, and optionally LinkedIn and Indeed. Filters, ranks and removes duplicates | No |
 | **Pick** | Tick Pick on the jobs you want, in the sheet, on your phone, or from a morning email. Then tell your agent "work my picks" | No |
 | **Find people** | Three LinkedIn searches per job (recruiters, hiring managers, peers), each a one-click link | No |
-| **Check the resume** | Reads your PDF the way an applicant tracking system does, and shows which of the posting's terms your resume lacks | No |
+| **Check the resume** | Reads your PDF the way an applicant tracking system does, shows which of the posting's terms your resume lacks, and flags bullets with no number, duty openers, filler, and tools no bullet shows | No |
 | **Track** | Logs applications, lists follow-ups due, compares interview rates by channel | No |
 | **Evaluate and research** | Grades a job's fit against your profile; writes a one-page company brief | Yes |
 | **Tailor** | A one-page LaTeX resume and cover letter per job, from the real job description and your own facts | Yes |
@@ -81,12 +81,34 @@ Sending more applications doesn't fix low odds per application. It also uses the
 
 > **Get to know a team member before you ask for anything.** When you reach out to someone on the team you're applying to, don't open with the job, your resume or a referral request. Start with an interesting question about their work, a point about something they've built or said, or something you have in common, and suggest a short coffee chat. Ask about the role, or for a referral, only after you've talked. A first message that asks for something reads as transactional; a good question starts a conversation.
 
+### Resume rules, and why
+
+Every tailored resume follows these rules ([prompts/tailor-resume.md](prompts/tailor-resume.md)). `python -m jobhunt check` tests the ones marked ✓, so you don't have to remember them.
+
+| Rule | Why it's the best choice | Checked |
+|---|---|---|
+| **Put the strongest match in the top third.** The first role's title and first 2–3 bullets should answer "does this person fit?" | Recruiters skim before they read. An eye-tracking study clocked the first pass at about 7 seconds, spent mostly on job titles and headings.[^ladders] What isn't near the top may never be seen | ✓ with `--jd`: which of the posting's terms sit in the top third |
+| **Each bullet: action, what you did with which tool or method, and the result.** | A duty says what you were supposed to do; a result says what happened because of you. Naming the tool shows how you got there, which is the evidence a hiring manager checks in the interview | |
+| **A number in most bullets (aim for 80%), but only numbers you can source.** | A number lets a stranger judge the size of the work: "cut costs" could mean anything, "cut costs 20%" can't. But a number you can't defend in an interview costs more trust than it earns, so the tool never estimates one | ✓ share of bullets with a number |
+| **Open with a strong verb, never a duty.** "Launched", "Cut", "Grew", not "Responsible for", "Helped" or "Worked on" | The first word is what a skimming eye catches. A duty opener hides your part in the work | ✓ duty openers |
+| **No filler.** No "team player", "various", "results-driven" | Recruiters can't check these, and every applicant writes them, so they take space without telling the reader anything | ✓ common filler |
+| **No generic skills list. Show keywords inside bullets; keep a short Tools line.** | A listed skill is a claim; a bullet that shows what you did with it is evidence. The Tools line stays because recruiters search their tracking system by tool name | ✓ tools on the list that no bullet shows |
+| **Mirror the job description's words, only where they're true.** For the base resume, use the terms that appear in 3+ postings for the role (`python -m jobhunt terms`) | Recruiters search and skim for the posting's own words. If you did the same work under a different name, using their name makes the match visible. Terms shared by several postings describe the role itself, not one company's quirks | ✓ keyword gap |
+| **Tailor every resume from the real posting.** Different jobs get different projects in a different order | Tailored resumes converted about 1.6 times as often, and better-written resumes raised hiring by 8%.[^huntr][^resume] A resume written from a guessed posting tailors to the wrong job | |
+| **Plain language.** No internal feature names | The recruiter doesn't work at your company. If they can't picture what changed, the result doesn't count | |
+| **No summary or objective, unless you're changing careers.** | The top of the page is the most-read space. Give it to your strongest evidence. A two-line summary only helps when your experience alone doesn't explain why you fit | |
+| **Projects only when they match the job.** | An unrelated project takes space from experience that does match. A matching one fills a gap your jobs don't cover | |
+| **Graduation year only.** | The year places you on a timeline without months to scan. Leave it off if you'd rather not invite guesses about your age | |
+| **One page, one column, real text, no fused letters.** | Tracking systems read text in stored order. Two columns scramble it, text inside images is invisible, and fused letters turn "staffing" into "sta?ing", so the keyword never matches | ✓ fails the check |
+
 ### Where the evidence is thin
 
 - **How many jobs to pick a day.** No study shows that fewer applications do better. "2–5" is about where your time goes, not a proven number.
 - **The resume check.** There's no good evidence that tracking software rejects resumes for missing keywords. Treat the keyword report as a gap finder, not a way to beat the software.
 - **Resume length.** One tracker's data shows two-page resumes did as well or better. One page stays the default because it's quicker to read, not because the data demands it.
 - **Follow-up timing.** We found no reliable data on when to follow up. Seven days is a sensible default.
+- **The skim time.** The "7 seconds" figure comes from one study by a job site, which didn't publish how many recruiters took part. The point that holds is that the first pass is short and lands on titles and the top of the page; the exact seconds don't.
+- **The 80% target for numbers.** It's a common rule of thumb, not a tested threshold. The check warns below it so you look again, not so you add numbers you can't back up.
 
 [^gh]: Greenhouse, *Hire Standard* (2026). https://greenhouse.com/recruiting-benchmarks
 [^ashby-in]: Ashby, *Talent Trends: Inbound* (2025). https://www.ashbyhq.com/talent-trends-report/reports/inbound
@@ -100,6 +122,7 @@ Sending more applications doesn't fix low odds per application. It also uses the
 [^huntr]: Huntr, *2025 Job Search Trends* (self-reported tracker data). https://huntr.co/research/2025-annual-job-search-trends-report
 [^resume]: van Inwegen, Munyikwa & Horton (2023). https://arxiv.org/abs/2301.08083
 [^bu]: Fradkin, Boston University (2025). https://www.bu.edu/articles/2025/looking-for-jobs-on-indeed-or-linkedin
+[^ladders]: Ladders eye-tracking study (2018), via HR Dive. https://www.hrdive.com/news/eye-tracking-study-shows-recruiters-look-at-resumes-for-7-seconds/541582/
 
 ## Choose your flow
 
@@ -125,7 +148,8 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 | `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers |
 | `python -m jobhunt picks` | The jobs you ticked Pick and haven't applied to |
 | `python -m jobhunt network find "Company"` | Who you already know there, from your LinkedIn data export |
-| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap |
+| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight, bullet checks and keyword gap (`--bullets` lists each bullet and what it's missing) |
+| `python -m jobhunt terms private/jds/*.txt` | Terms shared by 3+ postings, for your base resume |
 | `python -m jobhunt applied "Company" --channel Referral` | Log an application |
 | `python -m jobhunt due` | Follow-ups due today |
 | `python -m jobhunt stats` | Interviews by channel |
@@ -174,7 +198,6 @@ The scan engine uses only the Python standard library. `pymupdf` is needed for t
 - [career-ops](https://github.com/santifer/career-ops) by Santiago Fernández de Valderrama (MIT): the project that inspired this workflow.
 - [Jake's Resume](https://github.com/jakegut/resume) (MIT): the LaTeX layout.
 - Resume advice from [Diego Granados](https://www.linkedin.com/in/diegogranadosa/): no generic skills list; graduation year only.
-- Networking method from Mikelle's [UNLISTED](https://mikellecareers.com) networking guide.
 - Job data comes from each board's public feed. Listings from Remote OK and Remotive link back to those sites, as their terms ask.
 
 ## License
