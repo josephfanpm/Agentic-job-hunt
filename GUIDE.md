@@ -171,6 +171,9 @@ The list stays fresh on its own. Applied jobs move to the Applied tab, and jobs 
    - drafts the message
 6. **Answer what it asks.** Agents stop before sponsorship questions, and before applying where a referral is possible.
 7. **Send the messages yourself.** Agents never send under your name.
+
+   > **Get to know a team member before you ask for anything.** When you reach out to someone on the team you're applying to, don't open with the job, your resume or a referral request. Start with an interesting question about their work, a point about something they've built or said, or something you have in common, and suggest a short coffee chat. Ask about the role, or for a referral, only after you've talked. A first message that asks for something reads as transactional; a good question starts a conversation.
+
 8. **Log anything you did by hand:** `python -m jobhunt applied "Company" --channel Referral`.
 9. **Follow up:** `python -m jobhunt due` lists what's due. Send one short nudge ([prompts/follow-up.md](prompts/follow-up.md)), then let it go.
 

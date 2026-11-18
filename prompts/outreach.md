@@ -6,14 +6,20 @@ There are two reasons to message someone, and they need different messages.
 
 ## 1. There's an open role you're applying to
 
-Use **specific observation → link to your work → small ask**.
+**A team member (a peer, or anyone on the team who isn't hiring for it): build the relationship first.** Don't mention the job, your resume or a referral in the first message.
+
+- Open with one of these, built from a real detail: an interesting question about their work, a point about something they built, wrote or said, or something you have in common (a school, a past employer, a field, a city).
+- Ask for a short coffee chat (15–20 minutes, video or in person) to hear how they work.
+- In the chat, be curious about them and their team. Bring up the role near the end, and ask for a referral only if the chat went well, or in a follow-up a day or two later.
+
+**The hiring manager or recruiter for the role:** they're hiring, so it's fine to say you applied. Use **specific observation → link to your work → small ask**.
 
 - Open with something specific about the team, the product or the role.
 - Connect it to one result of yours, with a number.
 - Ask for very little: 10–15 minutes, or "open to a quick chat?"
 - Keep it under about 300 characters, so it fits a connection request.
 
-For a referral from someone you know, name the job and its ID, attach the tailored resume, and make it easy: "If you're comfortable, I'd love a referral for [role, ID]. I'll send anything you need."
+For a referral from someone you already know, or after a coffee chat, name the job and its ID, attach the tailored resume, and make it easy: "If you're comfortable, I'd love a referral for [role, ID]. I'll send anything you need."
 
 ## 2. No open role yet: get on their radar
 

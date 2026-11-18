@@ -41,7 +41,7 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 | **Track** | Logs applications, lists follow-ups due, compares interview rates by channel | No |
 | **Evaluate and research** | Grades a job's fit against your profile; writes a one-page company brief | Yes |
 | **Tailor** | A one-page LaTeX resume and cover letter per job, from the real job description and your own facts | Yes |
-| **Reach out** | A message matched to who's reading it. Agents draft; **you send** | Yes |
+| **Reach out** | A message matched to who's reading it. Team members get a question or a shared interest and a coffee-chat invite, not a request. Agents draft; **you send** | Yes |
 | **Apply** | Fills the application and logs it. Stops for referrals and sponsorship questions | Yes |
 | **Interview** | A story bank, a mock interview with a tough-interviewer setting, and a debrief | Yes |
 | **Offer** | Side-by-side comparison and a negotiation draft | Yes |
@@ -76,8 +76,10 @@ Sending more applications doesn't fix low odds per application. It also uses the
 | **4. Find the right person** | Three LinkedIn searches per job: recruiters, hiring managers and peers | **Reach a person, not a pile.** A direct message turns a cold application into a conversation |
 | **5. Tailor** | A resume per job, built from your own record of real work and checked to make sure it reads correctly | **Tailoring and specifics.** Specific, true detail stands out where generic AI text doesn't |
 | **6. Apply** | An agent fills in the form for jobs *you* picked. It stops when a referral is possible and for sponsorship questions | **No mass-applying.** The odds of a cold application are too low to make volume worth it |
-| **7. Reach out** | Drafts a short message: something specific about the team, one related result of yours, a small ask. **You send it** | **Human, short and specific.** A message sent by you, with a real detail, reads as genuine |
+| **7. Reach out** | Drafts a short message matched to the reader. For a team member: an interesting question, a point about their work, or something you share, plus a coffee-chat invite. **You send it** | **Relationship before the ask.** A message sent by you, with a real detail and no request, starts a conversation; the referral comes after |
 | **8. Follow up and measure** | Lists follow-ups due, and compares interview rates by channel: referral, hiring-manager message, cold | **Do more of what works.** Your own numbers show where to spend next week's time |
+
+> **Get to know a team member before you ask for anything.** When you reach out to someone on the team you're applying to, don't open with the job, your resume or a referral request. Start with an interesting question about their work, a point about something they've built or said, or something you have in common, and suggest a short coffee chat. Ask about the role, or for a referral, only after you've talked. A first message that asks for something reads as transactional; a good question starts a conversation.
 
 ### Where the evidence is thin
 
