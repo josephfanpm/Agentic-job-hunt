@@ -38,7 +38,7 @@ def export(tmp_path):
          [["Ana", "Ruiz", "Optum", "PM", "Great PM", "04/13/26, 05:16 PM", "VISIBLE"]])
     _csv(d / "Invitations.csv",
          ["From", "To", "Sent At", "Message", "Direction", "inviterProfileUrl", "inviteeProfileUrl"],
-         [["Me", "Fay Gu", "11/13/26, 10:35 PM", "Hi Fay, I applied for Jobber's Senior PM role.", "OUTGOING", ME,
+         [["Me", "Fay Gu", "11/13/26, 10:35 PM", "Hi Fay, I'd love to hear about the team at Jobber.", "OUTGOING", ME,
            "https://www.linkedin.com/in/fay-gu"],
           ["Me", "Cy Diaz", "10/01/26, 9:00 AM", "", "OUTGOING", ME, "https://www.linkedin.com/in/cy-diaz"]])
     return d

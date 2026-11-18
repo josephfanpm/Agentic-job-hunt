@@ -15,6 +15,7 @@ from jobhunt import net, sheet
 from jobhunt.models import Job
 
 _LABELS = {"greenhouse": "Greenhouse", "lever": "Lever", "ashby": "Ashby", "workable": "Workable",
+           "workday": "Workday",
            "remoteok": "Remote OK", "remotive": "Remotive", "weworkremotely": "We Work Remotely",
            "himalayas": "Himalayas", "hackernews": "Hacker News", "amazon": "amazon.jobs",
            "linkedin": "LinkedIn", "indeed": "Indeed", "zip_recruiter": "ZipRecruiter",

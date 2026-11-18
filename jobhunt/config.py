@@ -42,7 +42,8 @@ DEFAULTS: dict = {
     "max_per_company": 5,       # keeps one big employer from filling the list
     "priority_companies": [],   # scored first: e.g. where someone will refer you
     "big_companies": [],        # recruiter search gets a tech-recruiter filter
-    "companies": {"greenhouse": [], "lever": [], "ashby": [], "workable": []},
+    # workday entries are careers-page URLs: {"url": "https://x.wd5.myworkdayjobs.com/Site", "name": "X"}
+    "companies": {"greenhouse": [], "lever": [], "ashby": [], "workable": [], "workday": []},
     "sources": {
         "remoteok": True,
         "remotive": True,

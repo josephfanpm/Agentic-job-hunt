@@ -31,7 +31,7 @@ It catches up after days away, because it looks back `max_age_days`, and the see
 
 You can schedule an AI agent in the cloud to run the scan instead, but it fails in two common ways:
 
-- **The cloud network blocks job sites.** Hosted agent sandboxes often allow only a short list of websites, so job boards answer "403 Forbidden" and the scan finds nothing. If you use one anyway, allow these domains in its network settings: `boards-api.greenhouse.io`, `api.lever.co`, `api.ashbyhq.com`, `apply.workable.com`, `remoteok.com`, `remotive.com`, `weworkremotely.com`, `himalayas.app`, `hn.algolia.com`, `www.amazon.jobs`, `script.google.com` and `script.googleusercontent.com`. JobSpy also needs `www.linkedin.com`, `www.indeed.com`, `ca.indeed.com`, `www.ziprecruiter.com` and `www.glassdoor.com`.
+- **The cloud network blocks job sites.** Hosted agent sandboxes often allow only a short list of websites, so job boards answer "403 Forbidden" and the scan finds nothing. If you use one anyway, allow these domains in its network settings: `boards-api.greenhouse.io`, `api.lever.co`, `api.ashbyhq.com`, `apply.workable.com`, `remoteok.com`, `remotive.com`, `weworkremotely.com`, `himalayas.app`, `hn.algolia.com`, `www.amazon.jobs`, each Workday site you track (such as `cigna.wd5.myworkdayjobs.com`), `script.google.com` and `script.googleusercontent.com`. JobSpy also needs `www.linkedin.com`, `www.indeed.com`, `ca.indeed.com`, `www.ziprecruiter.com` and `www.glassdoor.com`.
 - **It shares your AI usage limit.** A scheduled agent draws on the same allowance as your own chats. After a heavy session, the morning run is refused and nothing is added.
 
 The local schedule avoids both: it runs on your network, and the scan needs no AI.
@@ -52,6 +52,7 @@ The daily list holds only jobs you could still apply to:
 | Source | Turn it on in config | Notes |
 |---|---|---|
 | Greenhouse, Lever, Ashby, Workable | `python -m jobhunt boards add "Company"` | One request per company; the freshest and most reliable |
+| Workday careers sites | `python -m jobhunt boards add "<careers page URL>" --name "Company"` | For employers with no public feed, common at insurers, hospital systems and banks. Reads the list the careers page itself loads, then opens only postings whose titles match. On big sites, add `"categories"` to the entry (the command lists them) |
 | Remote OK, Remotive, Himalayas | `sources.remoteok` etc. (on by default) | Remote roles; responses are cached for hours, as those boards ask |
 | We Work Remotely | `sources.weworkremotely: ["remote-product-jobs"]` | List the category feeds you want |
 | Hacker News "Who is hiring?" | `sources.hackernews` (on by default) | Free-text posts, so company, title and location are best guesses |
@@ -61,7 +62,7 @@ The daily list holds only jobs you could still apply to:
 ## Tuning
 
 - **Too many poor matches:** add words to `titles.exclude`, or set `keywords.require_any` and raise `keywords.require_min` to 2.
-- **Too few:** widen `titles.include`, raise `max_age_days`, add company boards.
+- **Too few:** widen `titles.include`, raise `max_age_days`, add company boards. A company that `boards add "Company"` can't find may be on Workday: open its careers page, copy the address once the job list shows, and add that.
 - **One employer fills the list:** lower `max_per_company`. Legal names such as "Amazon Web Services, Inc." count as the company you listed in `priority_companies` or `big_companies`.
 - **Ranking feels off:** edit `keywords.boost`. Title matches count more than description matches, and benefits or legal text is ignored.
 - The scan prints how many jobs each rule dropped, so you can see what a change does.

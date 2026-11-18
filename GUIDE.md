@@ -104,6 +104,12 @@ Add more companies at any time:
 python -m jobhunt boards add "Stripe" "Shopify"
 ```
 
+If a company's careers page is on Workday (the address contains `myworkdayjobs.com`), add it by address:
+
+```bash
+python -m jobhunt boards add "https://cigna.wd5.myworkdayjobs.com/cignacareers" --name "Cigna"
+```
+
 ### Step 5. Build your base resume
 
 Setup copied your resume to `private/`, or the LaTeX template if you gave none. To build a clean one-page version, ask your agent:
@@ -278,7 +284,7 @@ Everything is in `private/config.json`. [examples/config.example.json](examples/
 
 **Does my data leave my machine?** Files in `private/` stay local. The scan sends only ordinary requests for public job listings. A Google Sheet lives in your own Drive. Agents send text to their model providers to do their work, as any AI tool does.
 
-**A company isn't found by `boards add`.** It may use a system without a public feed, such as Workday. Its roles can still arrive through the other sources.
+**A company isn't found by `boards add`.** It may use Workday. Open its careers page, wait for the job list, copy the address (it contains `myworkdayjobs.com`), and run `python -m jobhunt boards add "<that address>" --name "Company"`. For a big employer, the command lists its job categories; add the ones you want as `"categories": ["Product", "Technology"]` on that entry in `private/config.json`, so the scan skips thousands of unrelated postings. Other systems without a feed (iCIMS, Taleo, custom pages) aren't read yet; their roles can still arrive through the other sources, or an agent can check the page on request ([prompts/fetch-pages.md](prompts/fetch-pages.md)).
 
 **The keyword gap lists odd words.** It's a counting heuristic over the posting's text, not a judgment. Use it as a prompt for what to check, and add a term only where you have real experience behind it.
 

@@ -4,7 +4,7 @@ The README's [Resume rules, and why](../README.md#resume-rules-and-why) explains
 
 ## Before writing
 
-1. **Get the real job description.** The scan saves one per job in `private/jds/`. If it isn't there, fetch the posting and save it. If you can't, stop: never tailor from a guess or a remembered description.
+1. **Get the real job description.** The scan saves one per job in `private/jds/`. If it isn't there, read the posting and save it, following [fetch-pages.md](fetch-pages.md). If you can't, stop: never tailor from a guess or a remembered description.
 2. **See the gap:** `python -m jobhunt check private/resume.pdf --jd <jd file>` lists the posting's most-used terms that the base resume lacks. Treat it as a list of things to check against the profile, not a list of words to add.
 3. **Look up the company's tools** in this posting and its other postings.
 4. **Read `private/profile.md`,** especially the **Experience bank**: every job, project, result and company detail the user gave in [profile-interview.md](profile-interview.md).

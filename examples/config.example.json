@@ -23,7 +23,8 @@
     "greenhouse": [{"slug": "acmeusa", "name": "Acme"}],
     "lever": [],
     "ashby": [],
-    "workable": []
+    "workable": [],
+    "workday": [{"url": "https://acme.wd5.myworkdayjobs.com/AcmeCareers", "name": "Acme", "categories": ["Product"]}]
   },
   "sources": {
     "remoteok": true,

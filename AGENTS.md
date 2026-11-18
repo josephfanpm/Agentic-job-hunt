@@ -21,12 +21,12 @@ These need no AI, so never do them by hand:
 | LinkedIn searches for a job | `python -m jobhunt people "Company" "Title"` |
 | Resume pre-flight, bullet checks and keyword gap | `python -m jobhunt check resume.pdf --jd <jd file>` |
 | Terms shared across postings, for a base resume | `python -m jobhunt terms private/jds/*.txt` |
-| A company's job board | `python -m jobhunt boards add "Company"` |
+| A company's job board | `python -m jobhunt boards add "Company"`, or `boards add "<Workday careers URL>" --name "Company"` |
 | Requests that build the Google Sheet | `python -m jobhunt sheet` |
 | Log an application (CSV tracker) | `python -m jobhunt applied "Company" "Role" --channel Referral` |
 | Follow-ups due, channel results (CSV tracker) | `python -m jobhunt due`, `python -m jobhunt stats` |
 
-The scan saves every job description to `private/jds/`. Read it from there before fetching anything.
+The scan saves every job description to `private/jds/`. Read it from there before fetching anything. Read a web page only for the two uses in [prompts/fetch-pages.md](prompts/fetch-pages.md), and follow its rules.
 
 ## The tracker is the source of truth
 
@@ -37,7 +37,7 @@ Every job, application and contact lives in the tracker, built from [sheet/schem
 1. **Never reorder, delete or overwrite** rows or columns another agent wrote. New rows go directly under the header. Fill only blank cells in existing rows unless the user asks otherwise.
 2. **Don't add jobs by hand** when the scan can: it remembers what it has shown, so nothing appears twice. If you add a job the user sent you, check Company + Role against the Daily jobs and Applied tabs first.
 3. **Claim a job before working it.** Write your name and the date in the Notes column (`Claude 2026-11-15: tailoring`) so other agents skip it.
-4. **Tailor only from a real job description:** the saved copy, or the posting you fetched. If you can't get it, leave the job for another agent or the user. Never write one from memory.
+4. **Tailor only from a real job description:** the saved copy, or the posting you fetched and saved ([prompts/fetch-pages.md](prompts/fetch-pages.md)). If you can't get it, leave the job for another agent or the user. Never write one from memory.
 5. **Never invent** pay, dates, locations, employers, titles, tools or metrics. Leave the cell empty instead.
 6. **Draft messages, never send them.** Put drafts in the tracker, or in Gmail as drafts if Gmail is connected ([prompts/check-email.md](prompts/check-email.md)). The user sends them.
 7. **Ask the user** before answering sponsorship or work-authorization questions, and before submitting where a referral is possible.

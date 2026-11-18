@@ -17,7 +17,7 @@ from jobhunt.models import Job
 from jobhunt.text import days_ago, drop_boilerplate, has_phrase, norm, norm_title, parse_pay, strip_html
 
 # When the same role shows up twice, keep the copy closest to the employer.
-_SOURCE_RANK = ["greenhouse", "lever", "ashby", "workable", "amazon", "himalayas",
+_SOURCE_RANK = ["greenhouse", "lever", "ashby", "workable", "workday", "amazon", "himalayas",
                 "remotive", "weworkremotely", "remoteok", "hackernews", "jobspy"]
 _COMPANY_NOISE = {"inc", "llc", "ltd", "corp", "corporation", "co", "company", "usa", "the",
                   "technologies", "technology", "labs", "hq"}

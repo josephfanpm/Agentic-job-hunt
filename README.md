@@ -34,7 +34,7 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 | Stage | What happens | Needs AI? |
 |---|---|---|
 | **Set up** | One command drafts your profile from your resume, finds your target companies' job boards, and creates the tracker | No |
-| **Scan** | Reads company job boards (Greenhouse, Lever, Ashby, Workable), remote boards (Remote OK, Remotive, We Work Remotely, Himalayas), Hacker News "Who is hiring?", Amazon, and optionally LinkedIn and Indeed. Filters, ranks and removes duplicates | No |
+| **Scan** | Reads company job boards (Greenhouse, Lever, Ashby, Workable, Workday), remote boards (Remote OK, Remotive, We Work Remotely, Himalayas), Hacker News "Who is hiring?", Amazon, and optionally LinkedIn and Indeed. Filters, ranks and removes duplicates | No |
 | **Pick** | Tick Pick on the jobs you want, in the sheet, on your phone, or from a morning email. Then tell your agent "work my picks" | No |
 | **Find people** | Three LinkedIn searches per job (recruiters, hiring managers, peers), each a one-click link | No |
 | **Check the resume** | Reads your PDF the way an applicant tracking system does, shows which of the posting's terms your resume lacks, and flags bullets with no number, duty openers, filler, and tools no bullet shows | No |
@@ -144,7 +144,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 |---|---|
 | `python -m jobhunt init` | Set up your private folder, profile, config and tracker |
 | `python -m jobhunt scan` | Find, filter and rank new jobs (`--dry-run` to preview) |
-| `python -m jobhunt boards add "Company"` | Find and track a company's job board |
+| `python -m jobhunt boards add "Company"` | Find and track a company's job board (or pass a Workday careers-page URL) |
 | `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers |
 | `python -m jobhunt picks` | The jobs you ticked Pick and haven't applied to |
 | `python -m jobhunt network find "Company"` | Who you already know there, from your LinkedIn data export |
@@ -178,7 +178,7 @@ Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwe
 - **[AGENTS.md](AGENTS.md):** the contract every agent follows
 - **Prompts:**
   - Getting started: [setup](prompts/setup.md), [profile-interview](prompts/profile-interview.md) (your experience bank), [kickoff](prompts/kickoff.md) (for any agent, including Muse and Grok)
-  - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md)
+  - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md), [fetch-pages](prompts/fetch-pages.md)
   - Daily: [work-picks](prompts/work-picks.md) (what "work my picks" does)
   - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md), [check-email](prompts/check-email.md)
   - Applying: [tailor-resume](prompts/tailor-resume.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
@@ -214,7 +214,7 @@ MIT
 
 Job seekers spend most of their hours on low-value work: searching boards, reformatting resumes and filling in forms. Meanwhile, the highest-value work gets the least time: referrals, specific outreach, and interview practice. This project moves the low-value work to scripts and AI agents, so the person's time goes where it changes outcomes. The person stays in control of every decision that has their name on it.
 
-**Status:** v0.2, in daily use for my own Senior PM search since November 2026. Open source, MIT licensed.
+**Status:** v0.2, in daily use since November 2026. Open source, MIT licensed.
 
 ### The problem
 
@@ -258,7 +258,7 @@ Job seekers spend most of their hours on low-value work: searching boards, refor
 
 ```mermaid
 flowchart LR
-    A[Job boards and feeds<br/>10 source types] -->|script, no AI| B[Filter, rank, dedupe]
+    A[Job boards and feeds<br/>11 source types] -->|script, no AI| B[Filter, rank, dedupe]
     B --> C[(Tracker<br/>CSV or Google Sheet)]
     C -->|person picks jobs| D{AI agent}
     D --> E[Tailored resume<br/>+ parser check]
@@ -277,7 +277,8 @@ flowchart LR
 | **The person sends every message** | Auto-send outreach | A message under someone's name is theirs to send. Auto-sent outreach is how bots get spotted and accounts get flagged | One manual step per message |
 | **Referral first, then apply** | Apply immediately, ask for a referral later | Many referral systems only credit a referral made before the application | Some applications wait a day or two for a reply |
 | **CSV tracker by default; Google Sheet optional** | Require Google Sheets | Local files need no account or connector, and a scheduled scan needs no agent | Spreadsheet features like dropdowns only come with the Sheet option |
-| **Public job feeds only** | Scrape LinkedIn and Indeed directly | Public feeds are stable, allowed and fast. Scraping breaks often and risks blocks | LinkedIn and Indeed are an opt-in extra through a third-party library |
+| **Public job feeds only** | Scrape LinkedIn and Indeed directly | Public feeds are stable, allowed and fast. Scraping breaks often and risks blocks. Workday sites are read through the same JSON their careers pages load, with no login or browser | LinkedIn and Indeed are an opt-in extra through a third-party library |
+| **Scripts find jobs; agents read single pages** | Let an AI agent browse careers pages each day | Agent page reads cost AI usage on every page, can't run on a schedule, often come back empty on careers sites, and some tools summarize the page, which can drop or change pay and dates | Agents still read one posting when the scan missed it, and check a priority company's careers page on request ([prompts/fetch-pages.md](prompts/fetch-pages.md)) |
 | **A written agent contract** (AGENTS.md) | Tie the workflow to one AI tool | Claude, Muse or any agent that can run a command can join | Rules live in prose, so each agent has to follow them |
 | **No RAG or vector database** | Index the person's documents for retrieval | A profile is a few pages and fits in one prompt. Retrieval would add setup and maintenance for no accuracy gain | Worth revisiting once the profile grows past what fits in a prompt |
 
@@ -311,7 +312,7 @@ The `stats` command won't rank channels until there are about 20 applications in
 | Risk | Mitigation |
 |---|---|
 | The AI overstates experience | Profile-only rule; every number must have a source; the person reviews every resume before it goes out |
-| A job board changes its feed | Each source is isolated, so one failure doesn't stop the scan; 73 automated tests run on every change |
+| A job board changes its feed | Each source is isolated, so one failure doesn't stop the scan; 109 automated tests run on every change |
 | Two agents overwrite each other | Insert-only writes, claiming a job in Notes, and a scan that remembers what it has already shown |
 | Personal data leaks | Everything personal lives in `private/`, which git never uploads; the scan sends only ordinary requests for public listings |
 | Too complex for non-technical users | A click-by-click setup guide, a guided setup command, and a no-AI mode that works on its own |

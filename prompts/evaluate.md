@@ -4,7 +4,7 @@ Use this before spending time on an application. Full mode runs it on every new 
 
 ## Inputs
 
-- The job description: `private/jds/<Company>__<Title>.txt` if the scan saved it, otherwise fetch the real posting. Never evaluate from a title alone.
+- The job description: `private/jds/<Company>__<Title>.txt` if the scan saved it, otherwise read the real posting and save it first ([fetch-pages.md](fetch-pages.md)). Never evaluate from a title alone.
 - `private/profile.md`.
 - `python -m jobhunt check private/resume.pdf --jd <jd file>` for the keyword gap.
 

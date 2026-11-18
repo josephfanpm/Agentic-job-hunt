@@ -281,14 +281,33 @@ def cmd_boards(args) -> int:
     if args.action == "list":
         for ats_name, lst in cfg["companies"].items():
             for e in lst:
-                slug, name = (e["slug"], e.get("name", "")) if isinstance(e, dict) else (e, "")
+                key = "url" if ats_name == "workday" else "slug"
+                slug, name = (e.get(key, ""), e.get("name", "")) if isinstance(e, dict) else (e, "")
                 print(f"{ats_name:<11} {slug:<28} {name}")
         return 0
+    from jobhunt import net
+    from jobhunt.sources import workday
     user = config.load_user(home / "config.json")
     for name in args.names:
+        if workday.is_workday_url(name):
+            try:
+                hit = workday.probe(name, net.get)
+            except (workday.WorkdayURLError, net.FetchError, ValueError) as e:
+                print(f"{name}: {e}")
+                continue
+            label = args.name or hit["tenant"].title()
+            added = workday.add_to_config(user, label, hit["url"])
+            print(f"{label}: workday {hit['url']}, {hit['jobs']} jobs, e.g. \"{hit['sample']}\""
+                  + ("" if added else "  (already tracked)"))
+            if hit["categories"]:
+                cats = ", ".join(f"{c['name']} ({c['count']})" for c in hit["categories"])
+                print(f"    job categories: {cats}")
+                print('    big site? add "categories": ["<name>", ...] to its entry in private/config.json')
+            continue
         hits = discover.find(name)
         if not hits:
-            print(f"{name}: no public board found on Greenhouse, Lever, Ashby or Workable")
+            print(f"{name}: no public board found on Greenhouse, Lever, Ashby or Workable. "
+                  "If its careers page is on Workday, run this again with that page's URL")
             continue
         hit = hits[0]
         added = discover.add_to_config(user, name, hit)
@@ -483,7 +502,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(fn=cmd_network)
 
     s = sub.add_parser("boards", help="find and track company job boards")
-    s.add_argument("action", choices=["add", "list"]), s.add_argument("names", nargs="*")
+    s.add_argument("action", choices=["add", "list"])
+    s.add_argument("names", nargs="*", help="company names, or a Workday careers-page URL")
+    s.add_argument("--name", help="display name for a Workday URL (default: from the URL)")
     s.set_defaults(fn=cmd_boards)
 
     s = sub.add_parser("sheet", help="print the requests that build the Google Sheet")
