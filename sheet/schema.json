@@ -6,6 +6,7 @@
       "name": "Daily jobs",
       "frozen_rows": 1,
       "columns": [
+        {"name": "Pick", "width": 50, "type": "checkbox", "owner": "user"},
         {"name": "Applied", "width": 70, "type": "checkbox", "owner": "user"},
         {"name": "Scanned", "width": 95, "type": "date", "owner": "scan"},
         {"name": "Rank", "width": 50, "owner": "scan"},
@@ -15,6 +16,7 @@
         {"name": "Location", "width": 150, "owner": "scan"},
         {"name": "Work type", "width": 90, "owner": "scan"},
         {"name": "Posted", "width": 95, "type": "date", "owner": "scan"},
+        {"name": "Who you know", "width": 200, "owner": "scan"},
         {"name": "Hiring manager", "width": 180, "owner": "any"},
         {"name": "Message", "width": 300, "owner": "any"},
         {"name": "Why it fits", "width": 280, "owner": "scan"},

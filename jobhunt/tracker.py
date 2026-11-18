@@ -66,11 +66,22 @@ def add_jobs(home: Path, jobs: list[Job], cfg: dict, today: dt.date | None = Non
     new = []
     for rank, job in enumerate(jobs, start=1):
         v = sheet.job_values(job, rank, cfg, today)
+        v["Pick"] = "FALSE"
         v["Applied"] = "FALSE"
         v["LinkedIn search"] = "\n".join(f"{label}: {url}" for label, _, url in v["LinkedIn search"])
         new.append(v)
     write(home, "Daily jobs", new + read(home, "Daily jobs"))
     return len(new)
+
+
+def ticked(value) -> bool:
+    """A checkbox cell: TRUE from Sheets, or anything a person types into a CSV."""
+    return value is True or str(value or "").strip().lower() in {"true", "yes", "y", "x", "1"}
+
+
+def picks(home: Path) -> list[dict]:
+    """Daily-jobs rows ticked Pick that aren't applied yet, in list order."""
+    return [r for r in read(home, "Daily jobs") if ticked(r.get("Pick")) and not ticked(r.get("Applied"))]
 
 
 def _same(row: dict, company: str, role: str) -> bool:

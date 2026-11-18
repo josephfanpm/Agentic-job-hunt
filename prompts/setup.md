@@ -36,7 +36,7 @@ Ask these one at a time:
 | Lowest yearly pay you'd accept, and the pay you're aiming for | `--pay-floor`, `--pay-target` |
 | Companies where someone could refer you | `--priority` |
 | Other companies to watch | `--companies` |
-| Track jobs in a Google Sheet or in files on this computer? | `--tracker sheet` or `--tracker csv` |
+| Track jobs in a Google Sheet or in files on this computer? Recommend the Google Sheet to anyone who isn't technical: they can tick jobs from their phone and get a morning email. Files opened in Excel can quietly change dates and break the format | `--tracker sheet` or `--tracker csv` |
 | How much should the AI do: only what you ask (lean), a middle amount (standard), or as much as it can (full)? See [MODES.md](../MODES.md) | `--mode` |
 
 Then run `python -m jobhunt init` with the answers as flags, plus `--resume <file>` and `--yes`. This creates the `private/` folder, which never leaves their computer.
@@ -47,7 +47,8 @@ Then run `python -m jobhunt init` with the answers as flags, plus `--resume <fil
 1. Check whether you have a Google Sheets or Google Drive connector. If not, tell the user how to add one in your app. It's usually under Settings, then Connectors (some apps call them Apps, Integrations or MCP servers). Ask them to connect Google Drive or Google Sheets with their **personal** Google account, then wait.
 2. Run [create-sheet.md](create-sheet.md).
 3. Set up the receiver so the daily scan can write to the sheet without AI: walk the user through [sheet/README-apps-script.md](../sheet/README-apps-script.md). Do the config edits yourself, and give them each click inside Google.
-4. If their app has no Google connector, say so and switch the tracker to files (`"tracker": "csv"` in `private/config.json`). They can import the files into Google Sheets any time.
+4. Ask: "Do you want a morning email with the top new jobs? You can pick jobs straight from it." Recommend yes. If yes, set `"email_digest": true` in `private/config.json`, and warn them that Google will ask once to let the script send email as them.
+5. If their app has no Google connector, say so and switch the tracker to files (`"tracker": "csv"` in `private/config.json`). They can import the files into Google Sheets any time.
 
 **For everyone, ask:** "Do you want to connect Gmail? I'd save your messages to recruiters as drafts in your Gmail, and spot replies and interview invites so your tracker stays up to date. I never send anything." If yes, have them connect Gmail the same way, then confirm you can see their inbox. If no, or their app has no Gmail connector, skip it. Drafts then go in the tracker.
 
@@ -67,7 +68,7 @@ Tell the user it takes 20–40 minutes, and that they can stop and pick it up la
 
 Tell the user, in three or four short lines:
 - where their jobs show up (the sheet link, or `private/tracker/daily_jobs.csv`)
-- that each morning they pick 2–5 jobs and ask you, for example, "Tailor my resume and draft a message for the Acme job"
+- that each morning they tick **Pick** next to 2–5 jobs (in the sheet, on their phone, or from the morning email), then tell you "work my picks"
 - that you never send messages or submit anything without asking them first
 
 Then suggest one more step: download their LinkedIn data so you can check who they know at each company before they apply. Give them the clicks from "Add your LinkedIn data" in [START-HERE.md](../START-HERE.md); when the full archive arrives, run `python -m jobhunt network build "<folder>"` for them.

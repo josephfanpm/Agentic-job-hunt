@@ -48,8 +48,20 @@ python -m jobhunt scan
 
 The last lines should say `sheet: added N row(s)`. Open the sheet: new jobs are at the top of **Daily jobs**, each with a checkbox, a link and three LinkedIn searches.
 
+## 5. Turn on the morning email (optional)
+
+After each scan, the script can email you the top new jobs. Each one has a **Pick this job** link: it opens a page with one button, and pressing it ticks Pick in your sheet. Email is sent from your own Gmail to yourself, so it's free and needs nothing else.
+
+1. In `private/config.json`, set `"email_digest": true` (and `"email_top"` to how many jobs to list; the default is 10).
+2. Run the next scan. The first time, Google asks you to allow the script to **send email as you**. It's the same kind of screen as in step 3, including the "Google hasn't verified this app" warning.
+
+If you set up the script before this feature existed, paste in the new [apps-script.gs](apps-script.gs) (keep your token), then **Deploy → Manage deployments → Edit → Version: New version**, so the URL stays the same.
+
+No email goes out on a day the scan doesn't run, for example when your computer stays off.
+
 ## Good to know
 
+- **Picks:** `python -m jobhunt picks` asks the script for the rows you ticked Pick, so any agent can read them without a Google connector.
 - **Columns are matched by header name.** Rename a column, and the scan stops filling it. Extra columns, such as another agent's, are left blank.
 - **Jobs already in Daily jobs, Applied or Archive are skipped,** matched on Company + Role.
 - **Applied jobs leave Daily jobs.** Ticking **Applied** moves the row to the Applied tab straight away, adding it there if it's missing. Rows ticked by another agent are moved at the next scan.

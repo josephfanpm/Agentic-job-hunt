@@ -157,14 +157,11 @@ The list stays fresh on its own. Applied jobs move to the Applied tab, and jobs 
 
 ## Part 2: The daily routine (20–30 minutes)
 
-1. **Open your tracker.** Read today's new rows.
-2. **Pick 2–5 jobs.** Ignore the rest. A few strong fits beat mass-applying.
+1. **Open your tracker,** or the morning email if you turned it on (`"email_digest": true`, Google Sheet only). Read today's new jobs. The **Who you know** column shows contacts there, if you've added your LinkedIn data.
+2. **Tick Pick on 2–5 jobs.** Ignore the rest. A few strong fits beat mass-applying. `python -m jobhunt picks` lists what you've ticked.
 3. **Find a person.** First run `python -m jobhunt network find "Company"`: someone you already know there beats any stranger. If nobody turns up, each job has three LinkedIn search links: recruiters, hiring managers and peers. Open one, set LinkedIn's *Current company* filter, and pick someone. For any other company: `python -m jobhunt people "Company" "Job title"`.
 4. **See the gap** before tailoring: `python -m jobhunt check private/resume.pdf --jd "private/jds/<Company>__<Title>.txt"`. The scan saved each job description there.
-5. **Hand the jobs to an agent:**
-   > Tailor and apply to Jobber and Acme from today's list. Draft a message to [name, title] for each.
-
-   For each job, the agent:
+5. **Tell your agent "work my picks"** ([prompts/work-picks.md](prompts/work-picks.md)). For each picked job, the agent:
    - reads the saved job description
    - tailors a one-page resume, and a cover letter if the form takes one
    - runs the resume check

@@ -199,3 +199,30 @@ def plain(res: dict) -> str:
     if not res["contacts"] and not res["pending"]:
         lines.append("  nobody yet: use `python -m jobhunt people` to find someone to reach out to")
     return "\n".join(lines)
+
+
+def has_index(home: Path) -> bool:
+    return (Path(home) / "network" / "contacts.csv").exists()
+
+
+def summary(company: str, home: Path, aliases: dict | None = None, limit: int = 3) -> str:
+    """One short cell for the tracker, e.g. "Ana Ruiz (warm), Ben Cole, +1 more".
+
+    "Warm" means they replied to you, endorsed you or recommended you.
+    Empty when you know nobody there or haven't built the index.
+    """
+    if not has_index(home):
+        return ""
+    res = find(company, home, aliases)
+    names = []
+    for r in res["contacts"][:limit]:
+        warm = int(r.get("received") or 0) > 0 or r.get("endorsed_you") or r.get("recommended_you")
+        names.append(r["name"] + (" (warm)" if warm else ""))
+    extra = len(res["contacts"]) - limit
+    if extra > 0:
+        names.append(f"+{extra} more")
+    text = ", ".join(names)
+    if res["pending"]:
+        n = len(res["pending"])
+        text += ("; " if text else "") + f"{n} invitation{'s' if n != 1 else ''} not accepted"
+    return text

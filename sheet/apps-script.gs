@@ -19,6 +19,12 @@
  * once; rows ticked by another agent, or already in "Applied", are cleared at
  * the start of each scan.
  *
+ * Pick: tick the Pick box on the jobs you want, then tell your AI agent
+ * "work my picks". `python -m jobhunt picks` asks this script for the ticked
+ * rows. When the scan asks for it (email_digest in config), this script also
+ * emails you the top new jobs. Each has a Pick link that opens a page with one
+ * button, so an email security scanner opening the link can't pick a job.
+ *
  * Old jobs you haven't applied to move to an "Archive" tab once they're older
  * than the scan's expire_after_days setting (default 14), counted from the
  * Posted date, or from Scanned when there's no posting date. Jobs at your
@@ -45,7 +51,17 @@ function doPost(e) {
   const lock = LockService.getDocumentLock();
   lock.waitLock(30000);
   try {
-    return reply_(addRows_(body.rows || [], body.expire_after_days, body.keep_companies || []));
+    if (body.action === 'picks') return reply_({ ok: true, picks: listPicks_() });
+    const res = addRows_(body.rows || [], body.expire_after_days, body.keep_companies || []);
+    if (res.ok && body.email && res.fresh && res.fresh.length) {
+      try {
+        res.emailed = sendDigest_(res.fresh, Number(body.email_top) || 10);
+      } catch (err) {
+        res.email_error = String(err);  // the rows are in; only the email failed
+      }
+    }
+    delete res.fresh;
+    return reply_(res);
   } catch (err) {
     return reply_({ ok: false, error: String(err) });
   } finally {
@@ -53,8 +69,11 @@ function doPost(e) {
   }
 }
 
-// Lets you open the web app URL in a browser to confirm it's deployed.
-function doGet() {
+// Opening the web app URL shows it's running. A Pick link from the email
+// opens a page with one button; only the button ticks the box.
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  if (p.action === 'pick') return pickPage_(p.k || '', p.s || '');
   return reply_({ ok: true, message: 'agentic-job-hunt receiver is running' });
 }
 
@@ -86,7 +105,9 @@ function addRows_(rows, expireDays, keepCompanies) {
       fresh.push(row);
     }
   });
-  if (!fresh.length) return { ok: true, added: 0, skipped: rows.length, moved: moved, archived: archived };
+  if (!fresh.length) {
+    return { ok: true, added: 0, skipped: rows.length, moved: moved, archived: archived, fresh: [] };
+  }
 
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
   const width = headers.length;
@@ -118,8 +139,10 @@ function addRows_(rows, expireDays, keepCompanies) {
   });
   target.setValues(values);
 
-  const applied = headers.indexOf('Applied');
-  if (applied >= 0) sheet.getRange(2, applied + 1, fresh.length, 1).insertCheckboxes();
+  ['Pick', 'Applied'].forEach(function (name) {
+    const i = headers.indexOf(name);
+    if (i >= 0) sheet.getRange(2, i + 1, fresh.length, 1).insertCheckboxes();
+  });
 
   const search = headers.indexOf('LinkedIn search');
   if (search >= 0) {
@@ -139,7 +162,135 @@ function addRows_(rows, expireDays, keepCompanies) {
     sheet.getRange(2, search + 1, fresh.length, 1).setRichTextValues(rich);
   }
   return { ok: true, added: fresh.length, skipped: rows.length - fresh.length,
-           moved: moved, archived: archived };
+           moved: moved, archived: archived, fresh: fresh };
+}
+
+// ---- Pick ------------------------------------------------------------------
+
+// Daily-jobs rows ticked Pick and not Applied, as {header: value}.
+function listPicks_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(DAILY_TAB);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  const pick = headers.indexOf('Pick'), applied = headers.indexOf('Applied');
+  if (pick < 0) return [];
+  const range = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length);
+  const values = range.getValues(), formulas = range.getFormulas();
+  const tz = ss.getSpreadsheetTimeZone();
+  const out = [];
+  values.forEach(function (row, i) {
+    if (row[pick] !== true || (applied >= 0 && row[applied] === true)) return;
+    const obj = {};
+    headers.forEach(function (h, j) {
+      if (!h || h === 'Pick' || h === 'Applied') return;
+      let v = row[j];
+      const link = String(formulas[i][j] || '').match(/HYPERLINK\("([^"]+)"/i);
+      if (link) v = link[1];
+      if (v instanceof Date) v = Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+      obj[h] = v;
+    });
+    out.push(obj);
+  });
+  return out;
+}
+
+// A short signature per job, so a Pick link works only for that job and
+// never reveals the token.
+function sign_(k) {
+  const raw = Utilities.computeHmacSha256Signature(String(k), TOKEN);
+  return Utilities.base64EncodeWebSafe(raw).slice(0, 22);
+}
+
+function findDailyRow_(k) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DAILY_TAB);
+  if (!sheet || sheet.getLastRow() < 2) return null;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  const c = headers.indexOf('Company'), r = headers.indexOf('Role');
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues();
+  for (let i = 0; i < values.length; i++) {
+    if (key_(values[i][c], values[i][r]) === k) {
+      return { sheet: sheet, headers: headers, row: i + 2, company: values[i][c], role: values[i][r] };
+    }
+  }
+  return null;
+}
+
+function pickPage_(k, s) {
+  if (!k || s !== sign_(k)) return page_('This link is not valid.', '');
+  const hit = findDailyRow_(k);
+  if (!hit) return page_('This job is no longer on your list.', '<p>It may be applied to or archived already.</p>');
+  const button =
+    '<button id="b" onclick="go()">Pick this job</button><p id="m"></p>' +
+    '<script>function go(){document.getElementById("b").disabled=true;' +
+    'google.script.run.withSuccessHandler(function(t){document.getElementById("m").textContent=t;})' +
+    '.pickJob(' + JSON.stringify(k) + ',' + JSON.stringify(s) + ');}</script>';
+  return page_(esc_(hit.company) + ' — ' + esc_(hit.role), button);
+}
+
+// Called by the button on the pick page.
+function pickJob(k, s) {
+  if (!k || s !== sign_(k)) return 'This link is not valid.';
+  const lock = LockService.getDocumentLock();
+  lock.waitLock(30000);
+  try {
+    const hit = findDailyRow_(k);
+    if (!hit) return 'This job is no longer on your list.';
+    const col = hit.headers.indexOf('Pick');
+    if (col < 0) return 'Your sheet has no Pick column. Add one to Daily jobs first.';
+    hit.sheet.getRange(hit.row, col + 1).insertCheckboxes().setValue(true);
+    return 'Picked. Tell your AI agent "work my picks" when you\'re ready.';
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function page_(title, body) {
+  const html = '<style>body{font-family:Arial,sans-serif;margin:32px 16px;max-width:520px;color:#1f2937}' +
+    'button{font-size:16px;padding:12px 20px;border:0;border-radius:6px;background:#1f3863;color:#fff}' +
+    'button:disabled{opacity:.5}</style><h2>' + title + '</h2>' + body;
+  return HtmlService.createHtmlOutput(html).setTitle('Pick a job')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// ---- Morning email ---------------------------------------------------------
+
+// Email the top new jobs to the sheet's owner. Returns how many were listed.
+function sendDigest_(rows, top) {
+  const url = ScriptApp.getService().getUrl();
+  const list = rows.slice()
+    .sort(function (a, b) { return (Number(a.Rank) || 999) - (Number(b.Rank) || 999); })
+    .slice(0, top);
+  const items = list.map(function (row) {
+    const k = key_(row.Company, row.Role);
+    const pick = url + '?action=pick&k=' + encodeURIComponent(k) + '&s=' + sign_(k);
+    const link = row.Link && typeof row.Link === 'object' ? row.Link.url : row.Link;
+    const facts = [row.Pay, row.Location, row['Work type']].filter(Boolean).map(esc_).join(' · ');
+    return '<tr><td style="padding:12px 0;border-bottom:1px solid #e5e7eb">' +
+      '<b>' + esc_(row.Company) + '</b> — ' + esc_(row.Role) + '<br>' +
+      (facts ? '<span style="color:#4b5563">' + facts + '</span><br>' : '') +
+      (row['Who you know'] ? 'You know: ' + esc_(row['Who you know']) + '<br>' : '') +
+      (row['Why it fits'] ? '<span style="color:#4b5563">' + esc_(row['Why it fits']) + '</span><br>' : '') +
+      '<a href="' + esc_(pick) + '">Pick this job</a>' +
+      (link ? ' · <a href="' + esc_(link) + '">See the posting</a>' : '') +
+      '</td></tr>';
+  });
+  const more = rows.length > list.length ? '<p>' + (rows.length - list.length) + ' more in your sheet.</p>' : '';
+  const names = list.slice(0, 3).map(function (r) { return r.Company; }).join(', ');
+  MailApp.sendEmail({
+    to: Session.getEffectiveUser().getEmail(),
+    subject: rows.length + ' new job' + (rows.length === 1 ? '' : 's') + ': ' + names,
+    htmlBody: '<div style="font-family:Arial,sans-serif;max-width:600px">' +
+      '<table style="border-collapse:collapse;width:100%">' + items.join('') + '</table>' + more +
+      '<p><a href="' + esc_(SpreadsheetApp.getActiveSpreadsheet().getUrl()) + '">Open your sheet</a>. ' +
+      'When you\'ve picked, tell your AI agent "work my picks".</p></div>',
+  });
+  return list.length;
+}
+
+function esc_(v) {
+  return String(v === undefined || v === null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // Runs by itself whenever you edit the sheet by hand.

@@ -38,16 +38,28 @@ def rows(jobs: list[Job], cfg: dict, today: dt.date | None = None) -> list[dict]
 
 
 def send(url: str, token: str, payload_rows: list[dict], timeout: int = 90,
-         expire_after_days: int = 0, keep_companies: list[str] | None = None) -> dict:
+         expire_after_days: int = 0, keep_companies: list[str] | None = None,
+         email: bool = False, email_top: int = 10) -> dict:
     """POST rows to the receiver. Returns its reply, e.g. {"ok": true, "added": 3}.
 
     The receiver also tidies the sheet: applied jobs move to Applied, and jobs
     older than expire_after_days move to Archive (keep_companies are exempt).
+    With email=True it emails you the top new jobs, each with a Pick link.
     """
+    return _post(url, token, {"rows": payload_rows, "expire_after_days": expire_after_days,
+                              "keep_companies": keep_companies or [], "email": bool(email),
+                              "email_top": int(email_top)}, timeout)
+
+
+def picks(url: str, token: str, timeout: int = 60) -> list[dict]:
+    """Rows of Daily jobs ticked Pick and not yet Applied, as {header: value}."""
+    return _post(url, token, {"action": "picks"}, timeout).get("picks", [])
+
+
+def _post(url: str, token: str, body: dict, timeout: int) -> dict:
     if not url or not token:
         raise ValueError("sheet_webhook and sheet_token must both be set in config")
-    data = json.dumps({"token": token, "rows": payload_rows, "expire_after_days": expire_after_days,
-                       "keep_companies": keep_companies or []}, ensure_ascii=False).encode("utf-8")
+    data = json.dumps({"token": token, **body}, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(url, data=data, method="POST", headers={
         "Content-Type": "application/json", "User-Agent": net.USER_AGENT})
     # Apps Script answers a POST with a redirect to the result, which urllib

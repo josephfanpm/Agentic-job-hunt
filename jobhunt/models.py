@@ -23,6 +23,7 @@ class Job:
     score: int = 0
     why: str = ""
     flags: list[str] = field(default_factory=list)
+    known: str = ""             # who you know there, from `jobhunt network build`
 
     def to_dict(self, with_description: bool = False) -> dict:
         d = asdict(self)

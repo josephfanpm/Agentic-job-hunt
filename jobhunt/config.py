@@ -56,6 +56,8 @@ DEFAULTS: dict = {
     # manager/peer titles: empty = derived from titles.include
     # company_aliases: extra names for `network find`, e.g. {"Optum": ["optum", "unitedhealth"]}
     "linkedin": {"manager_titles": [], "peer_titles": [], "company_aliases": {}},
+    "email_digest": False,      # Google Sheet receiver emails you the top new jobs after each scan
+    "email_top": 10,            # how many jobs the email lists
     "files": {"name_prefix": ""},   # e.g. "Ada_Lovelace" -> Ada_Lovelace_Resume_Company.pdf
 }
 

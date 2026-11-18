@@ -76,6 +76,16 @@ def cmd_scan(args) -> int:
     res = pipeline.run(cfg, home=home, only=only, include_seen=args.include_seen,
                        remember=not args.dry_run, today=today)
 
+    # Who you already know at each company, if the LinkedIn export is indexed
+    from jobhunt import network
+    if network.has_index(home):
+        aliases = cfg["linkedin"].get("company_aliases", {})
+        cache: dict[str, str] = {}
+        for j in res.jobs:
+            if j.company not in cache:
+                cache[j.company] = network.summary(j.company, home, aliases)
+            j.known = cache[j.company]
+
     out_dir = home / "out"
     out_dir.mkdir(parents=True, exist_ok=True)
     scan_file = out_dir / f"scan-{today.isoformat()}.json"
@@ -102,6 +112,8 @@ def cmd_scan(args) -> int:
         pay = f" | {j.pay}" if j.pay else ""
         print(f"{i:>2}. [{j.score}] {j.company} — {j.title} | {j.location or 'location not given'}{pay}")
         print(f"    {j.why}  {j.url}")
+        if j.known:
+            print(f"    you know: {j.known}")
 
     if args.dry_run:
         print("\ndry run: nothing was added to your tracker.")
@@ -117,7 +129,8 @@ def cmd_scan(args) -> int:
         try:
             reply = webhook.send(cfg["sheet_webhook"], cfg["sheet_token"], webhook.rows(res.jobs, cfg, today),
                                  expire_after_days=cfg["expire_after_days"],
-                                 keep_companies=cfg["priority_companies"])
+                                 keep_companies=cfg["priority_companies"],
+                                 email=cfg["email_digest"], email_top=cfg["email_top"])
         except (net.FetchError, ValueError) as e:
             # Keep the jobs for next time instead of marking them seen
             pipeline.forget(home, res.jobs)
@@ -128,6 +141,10 @@ def cmd_scan(args) -> int:
               f"{reply.get('skipped', 0)} already in the sheet; "
               f"{reply.get('moved', 0)} applied moved to Applied; "
               f"{reply.get('archived', 0)} older than {cfg['expire_after_days']} days archived")
+        if reply.get("emailed"):
+            print(f"emailed you the top {reply['emailed']} job(s)")
+        if reply.get("email_error"):
+            print(f"couldn't send the email: {reply['email_error']}")
     elif res.jobs:
         req_file = out_dir / f"sheet-rows-{today.isoformat()}.json"
         req_file.write_text(json.dumps(sheet.row_requests(res.jobs, cfg, today), separators=(",", ":"),
@@ -161,6 +178,44 @@ def cmd_people(args) -> int:
     if args.big:
         cfg["big_companies"] = cfg["big_companies"] + [args.company]
     print(people.plain(people.for_job(args.company, args.title or "", cfg)))
+    return 0
+
+
+# ---- picks -------------------------------------------------------------------
+def cmd_picks(args) -> int:
+    """Jobs the user ticked Pick and hasn't applied to: the agent's to-do list."""
+    from jobhunt import tracker
+    cfg, home = _load(args)
+    if cfg["tracker"] == "csv":
+        rows = tracker.picks(home)
+    elif cfg.get("sheet_webhook") and cfg.get("sheet_token"):
+        from jobhunt import net, webhook
+        try:
+            rows = webhook.picks(cfg["sheet_webhook"], cfg["sheet_token"])
+        except net.FetchError as e:
+            print(f"couldn't read the sheet: {e}")
+            return 1
+    else:
+        print("Your tracker is a Google Sheet without the receiver set up. Read the Daily jobs tab: "
+              "rows with Pick ticked and Applied not ticked. (Or set up sheet/README-apps-script.md.)")
+        return 2
+    if args.json:
+        print(json.dumps(rows, ensure_ascii=False, indent=1))
+        return 0
+    if not rows:
+        print("No picks yet. Tick Pick next to the jobs you want in Daily jobs.")
+        return 0
+    jd_dir = home / "jds"
+    for i, r in enumerate(rows, start=1):
+        company, role = r.get("Company", ""), r.get("Role", "")
+        state = "ready: resume done" if r.get("Resume") else "to do"
+        print(f"{i:>2}. {company} — {role}  [{state}]")
+        for label in ("Pay", "Location", "Who you know", "Link", "Notes"):
+            if r.get(label):
+                print(f"    {label.lower()}: {r[label]}")
+        jd = jd_dir / f"{_slug(company)}__{_slug(role)}.txt"
+        if jd.exists():
+            print(f"    job description: {jd}")
     return 0
 
 
@@ -381,6 +436,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--peer", action="append", help="peer title to search (repeatable)")
     s.add_argument("--big", action="store_true", help="large company: narrow recruiters to tech")
     s.set_defaults(fn=cmd_people)
+
+    s = sub.add_parser("picks", help="jobs you ticked Pick and haven't applied to")
+    s.add_argument("--json", action="store_true", help="print the rows as JSON, for agents")
+    s.set_defaults(fn=cmd_picks)
 
     s = sub.add_parser("network", help="who you know at a company, from your LinkedIn export")
     s.add_argument("action", choices=["build", "find"])

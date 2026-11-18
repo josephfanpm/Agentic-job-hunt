@@ -35,6 +35,7 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 |---|---|---|
 | **Set up** | One command drafts your profile from your resume, finds your target companies' job boards, and creates the tracker | No |
 | **Scan** | Reads company job boards (Greenhouse, Lever, Ashby, Workable), remote boards (Remote OK, Remotive, We Work Remotely, Himalayas), Hacker News "Who is hiring?", Amazon, and optionally LinkedIn and Indeed. Filters, ranks and removes duplicates | No |
+| **Pick** | Tick Pick on the jobs you want, in the sheet, on your phone, or from a morning email. Then tell your agent "work my picks" | No |
 | **Find people** | Three LinkedIn searches per job (recruiters, hiring managers, peers), each a one-click link | No |
 | **Check the resume** | Reads your PDF the way an applicant tracking system does, and shows which of the posting's terms your resume lacks | No |
 | **Track** | Logs applications, lists follow-ups due, compares interview rates by channel | No |
@@ -67,6 +68,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 | `python -m jobhunt scan` | Find, filter and rank new jobs (`--dry-run` to preview) |
 | `python -m jobhunt boards add "Company"` | Find and track a company's job board |
 | `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers |
+| `python -m jobhunt picks` | The jobs you ticked Pick and haven't applied to |
 | `python -m jobhunt network find "Company"` | Who you already know there, from your LinkedIn data export |
 | `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap |
 | `python -m jobhunt applied "Company" --channel Referral` | Log an application |
@@ -98,6 +100,7 @@ Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwe
 - **Prompts:**
   - Getting started: [setup](prompts/setup.md), [profile-interview](prompts/profile-interview.md) (your experience bank), [kickoff](prompts/kickoff.md) (for any agent, including Muse and Grok)
   - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md)
+  - Daily: [work-picks](prompts/work-picks.md) (what "work my picks" does)
   - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md), [check-email](prompts/check-email.md)
   - Applying: [tailor-resume](prompts/tailor-resume.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
   - Interviews and offers: [interview-prep](prompts/interview-prep.md), [mock-interview](prompts/mock-interview.md), [offer](prompts/offer.md), [review](prompts/review.md)

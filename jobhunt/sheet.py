@@ -94,7 +94,7 @@ def job_values(job: Job, rank: int, cfg: dict, today: dt.date | None = None) -> 
     remote = "Remote" if job.remote else ""
     note = f"via {job.source}" + (f" · ID {job.job_id}" if job.job_id and len(job.job_id) < 40 else "")
     return {
-        "Applied": False, "Scanned": today.isoformat(), "Rank": rank, "Company": job.company,
+        "Pick": False, "Applied": False, "Who you know": job.known, "Scanned": today.isoformat(), "Rank": rank, "Company": job.company,
         "Role": job.title, "Pay": job.pay, "Location": job.location, "Work type": remote,
         "Posted": job.posted, "Why it fits": job.why, "Link": job.url, "Notes": note,
         "LinkedIn search": people.for_job(job.company, job.title, cfg),

@@ -28,6 +28,7 @@ These commands make no AI calls in any mode:
 |---|---|
 | `python -m jobhunt scan` | Reads every source, filters, ranks, removes duplicates, saves each job description |
 | `python -m jobhunt people "Company" "Title"` | Three LinkedIn searches with links |
+| `python -m jobhunt picks` | Lists the jobs ticked Pick and not yet applied |
 | `python -m jobhunt network build <folder>` / `network find "Company"` | Indexes your LinkedIn export; lists who you know at a company |
 | `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap |
 | `python -m jobhunt boards add "Company"` | Finds a company's job board |

@@ -148,6 +148,14 @@ Your personal files stay in the `private` folder on your computer and are never 
 | See who to follow up with today | `python -m jobhunt due` |
 | Add a company to watch | `python -m jobhunt boards add "Company"` |
 
+### Your daily routine (10 minutes)
+
+1. **Pick jobs.** Open your Google Sheet (on your computer or in the Google Sheets phone app) and tick **Pick** next to 2–5 jobs you like. With the morning email turned on, click **Pick this job** in the email instead.
+2. **Hand them over.** Open your AI app on your computer, open your `job-hunt` folder, and type **work my picks**.
+3. **Send and apply.** Come back later: each picked job has a tailored resume and a draft message. Read them, send the messages yourself, and answer anything the app asks.
+
+This needs an AI app that works with files on your computer (see above). A chat website such as chatgpt.com can't read your sheet or files, so it can't do step 2.
+
 ### Add your LinkedIn data (optional)
 
 This takes 5 minutes of clicking, then up to a day of waiting. A referral from someone you know beats any cold application, so the tool should know who you know.

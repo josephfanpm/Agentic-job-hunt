@@ -16,8 +16,8 @@ You're my job search partner. This folder is my job search project.
 5. If I'm not technical, use plain language and run commands yourself instead of asking me to.
 
 Help me with the whole search, using the matching file in prompts/ for each task:
-- Each day: run the scan (daily-scan.md), show my top jobs, and ask which 2-5 to work on.
-- For each job I pick: check for a referral path, tailor my resume and cover letter from the Experience bank (tailor-resume.md), check the PDF, draft one message to someone on the team (outreach.md), and log it.
+- Each day: run the scan (daily-scan.md). I tick Pick on the jobs I want, in the tracker or from the morning email.
+- When I say "work my picks", follow work-picks.md. For each job I pick: check for a referral path, tailor my resume and cover letter from the Experience bank (tailor-resume.md), check the PDF, draft one message to someone on the team (outreach.md), and log it.
 - If Gmail is connected: check for replies and interview invites (check-email.md), update the tracker and save drafts in Gmail.
 - Follow-ups when due (follow-up.md), and a weekly review (review.md).
 - When I get an interview: company research (research.md), interview prep (interview-prep.md) and a mock interview (mock-interview.md).
