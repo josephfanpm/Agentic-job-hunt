@@ -4,7 +4,7 @@ Warm contacts beat cold ones, so mine the people you already know before you sea
 
 ## Get the data
 
-On a computer: LinkedIn → **Me** → **Settings & Privacy** → **Data privacy** → **Get a copy of your data** → choose the larger archive. A first file arrives within minutes and the full archive within 24 hours; wait for the full one (the link works for 72 hours). Unzip it and run:
+Download your LinkedIn data ([the clicks are in START-HERE](../START-HERE.md#add-your-linkedin-data-optional)). Unzip it and run:
 
 ```bash
 python -m jobhunt network build "<the unzipped folder>"

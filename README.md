@@ -4,16 +4,30 @@ A job search run by scripts, AI agents and one human. Scripts find and rank the 
 
 It works for any role: set your job titles in one config file. You choose how much the AI does, from almost nothing to nearly everything.
 
-> **Never used a terminal, or don't know how to code? [Start here](START-HERE.md).** A free AI app can set it all up from one pasted message, or you can follow every click yourself. You don't need a paid AI plan or a code editor.
+## Get started
 
-Developer quick start:
+### Option 1: let an AI agent set it up (about 10 minutes)
 
-```bash
-git clone https://github.com/josephfanpm/agentic-job-hunt.git && cd agentic-job-hunt
-pip install -r requirements.txt
-python -m jobhunt init --resume path/to/your-resume.pdf    # asks a few questions
-python -m jobhunt scan                                     # today's ranked jobs
-```
+This works whether or not you code. The agent installs what's missing, asks about your search, builds your tracker, interviews you about your experience, and runs the first scan.
+
+- **You already use an agent** (Claude Code, Codex, Antigravity, Grok Build, Cline): open an empty folder with your resume in it and say *"Set up https://github.com/josephfanpm/agentic-job-hunt in this folder by following prompts/setup.md."*
+- **You don't, or you've never used a terminal:** [START-HERE.md](START-HERE.md) shows which free app to install and the exact message to paste. No paid plan or code editor needed.
+
+### Option 2: do it yourself
+
+- **Not a programmer:** follow Steps 1 to 5 in [START-HERE.md](START-HERE.md). Every click is written out.
+- **Developer:**
+
+  ```bash
+  git clone https://github.com/josephfanpm/agentic-job-hunt.git && cd agentic-job-hunt
+  pip install -r requirements.txt
+  python -m jobhunt init --resume path/to/your-resume.pdf    # asks a few questions
+  python -m jobhunt scan                                     # today's ranked jobs
+  ```
+
+  Then continue with [GUIDE.md](GUIDE.md) from Step 2.
+
+After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 
 ## What it does
 

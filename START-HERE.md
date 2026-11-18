@@ -148,7 +148,9 @@ Your personal files stay in the `private` folder on your computer and are never 
 | See who to follow up with today | `python -m jobhunt due` |
 | Add a company to watch | `python -m jobhunt boards add "Company"` |
 
-**Add your LinkedIn data (5 minutes of clicking, then up to a day of waiting).** A referral from someone you know beats any cold application, so the tool should know who you know.
+### Add your LinkedIn data (optional)
+
+This takes 5 minutes of clicking, then up to a day of waiting. A referral from someone you know beats any cold application, so the tool should know who you know.
 
 1. On a computer (the phone app can't do this), open LinkedIn and click **Me** → **Settings & Privacy** → **Data privacy** → **Get a copy of your data**.
 2. Choose the larger archive (the first option, with everything), then **Request archive**.

@@ -121,7 +121,7 @@ The check reads the PDF the way an applicant tracking system does. It fails on t
 
 ### Step 6. Mine your LinkedIn network
 
-Request your data from LinkedIn on a computer: **Me → Settings & Privacy → Data privacy → Get a copy of your data**, and choose the larger archive. LinkedIn emails a first file within minutes and the full archive within 24 hours; wait for the full one, and download it within 72 hours. Unzip it anywhere, then index it:
+Download your LinkedIn data ([the clicks are in START-HERE](START-HERE.md#add-your-linkedin-data-optional); the full archive takes up to 24 hours). Unzip it anywhere, then index it:
 
 ```bash
 python -m jobhunt network build "<the unzipped folder>"
