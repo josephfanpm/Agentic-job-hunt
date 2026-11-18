@@ -46,6 +46,59 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 | **Interview** | A story bank, a mock interview with a tough-interviewer setting, and a debrief | Yes |
 | **Offer** | Side-by-side comparison and a negotiation draft | Yes |
 
+## Why it works this way
+
+### Cold applications rarely work anymore
+
+- **Each opening gets flooded.** Employers on Greenhouse received about 194 applications per hire in late 2026. On Ashby it was about 291.[^gh][^ashby-in]
+- **Few cold applicants get through.** On Ashby, people who applied cold got an interview 3% of the time and an offer 0.2% of the time.[^ashby-ref]
+- **Volume keeps rising.** LinkedIn receives about 11,000 applications a minute. At small businesses, the share of applicants who get an interview fell from 15% in 2016 to 3% in 2024.[^li][^cp]
+- **AI-written applications all look alike.** After an AI cover-letter tool launched, a well-matched cover letter stopped predicting who got a callback. Employers leaned on work history instead.[^cui]
+- **Some postings aren't real.** An estimated 18–26% are "ghost jobs" that may never be filled.[^ghost]
+
+Sending more applications doesn't fix low odds per application. It also uses the time that would go into what does work.
+
+### What works now
+
+- **Referrals.** On Ashby, referred candidates got an interview 40% of the time and an offer 7.3% of the time: about 36 times the cold rate. Referrals were about 1% of applications but about 18% of hires.[^ashby-ref]
+- **Being found by a company's recruiter.** Candidates a recruiter reaches out to are hired about 8 times as often as cold applicants. Referrals are hired about 11 times as often.[^gem]
+- **Acquaintances, not only close friends.** A randomized study of 20 million LinkedIn users found people you know moderately well lead to more job moves than close friends.[^weak]
+- **Tailoring.** Tailored resumes converted about 1.6 times as often in one tracker's user data. A field study of about 500,000 job seekers found better-written resumes raised hiring by 8%.[^huntr][^resume]
+- **Applying early.** Most applications arrive in a posting's first week, and people apply more when few others have.[^ashby-in][^bu]
+
+### The flow, and where each best practice fits
+
+| Step | What the tool does | Best practice it applies |
+|---|---|---|
+| **1. Scan** | Checks company job boards every day and ranks what's new. Old jobs move to an archive after 14 days | **Apply early.** You see a job within a day of its posting, while you're among the first applicants |
+| **2. Pick** | You tick **Pick** on 2–5 jobs: in the sheet, on your phone, or from the morning email | **Fit over volume.** Your time goes to a few strong fits, where a referral and tailoring pay off |
+| **3. Check who you know** | **Who you know** shows contacts at each company, from your LinkedIn data. `network find` lists them | **Referral first.** The single biggest factor in the data: about 36 times the offer rate of applying cold |
+| **4. Find the right person** | Three LinkedIn searches per job: recruiters, hiring managers and peers | **Reach a person, not a pile.** A direct message turns a cold application into a conversation |
+| **5. Tailor** | A resume per job, built from your own record of real work and checked to make sure it reads correctly | **Tailoring and specifics.** Specific, true detail stands out where generic AI text doesn't |
+| **6. Apply** | An agent fills in the form for jobs *you* picked. It stops when a referral is possible and for sponsorship questions | **No mass-applying.** The odds of a cold application are too low to make volume worth it |
+| **7. Reach out** | Drafts a short message: something specific about the team, one related result of yours, a small ask. **You send it** | **Human, short and specific.** A message sent by you, with a real detail, reads as genuine |
+| **8. Follow up and measure** | Lists follow-ups due, and compares interview rates by channel: referral, hiring-manager message, cold | **Do more of what works.** Your own numbers show where to spend next week's time |
+
+### Where the evidence is thin
+
+- **How many jobs to pick a day.** No study shows that fewer applications do better. "2–5" is about where your time goes, not a proven number.
+- **The resume check.** There's no good evidence that tracking software rejects resumes for missing keywords. Treat the keyword report as a gap finder, not a way to beat the software.
+- **Resume length.** One tracker's data shows two-page resumes did as well or better. One page stays the default because it's quicker to read, not because the data demands it.
+- **Follow-up timing.** We found no reliable data on when to follow up. Seven days is a sensible default.
+
+[^gh]: Greenhouse, *Hire Standard* (2026). https://greenhouse.com/recruiting-benchmarks
+[^ashby-in]: Ashby, *Talent Trends: Inbound* (2025). https://www.ashbyhq.com/talent-trends-report/reports/inbound
+[^ashby-ref]: Ashby, *Talent Trends: Referrals* (2025), 38M applications. https://www.ashbyhq.com/talent-trends-report/reports/referrals
+[^li]: eWeek on LinkedIn application volume (2025). https://www.eweek.com/news/ai-job-applications-linkedin/
+[^cp]: CareerPlug, recruiting metrics (2025). https://www.careerplug.com/recruiting-metrics-and-kpis/
+[^cui]: Cui, Dias & Ye, field data on AI-written applications (2025). https://arxiv.org/abs/2509.25054
+[^ghost]: Greenhouse figure via Entrepreneur (2024); Northwestern and others via CPA Practice Advisor (2025). https://www.entrepreneur.com/business-news/ghost-job-listings-on-the-rise-how-to-spot-avoid-experts/485494 · https://www.cpapracticeadvisor.com/2025/11/12/ghost-jobs-up-to-1-in-3-job-listings-dont-result-in-hires/173044/
+[^gem]: Gem, *2026 Recruiting Benchmarks*, 165M applications. https://app.gem.com/blog/key-takeaways-from-the-2026-recruiting-benchmarks-report
+[^weak]: Rajkumar et al., *Science* (2022). https://ide.mit.edu/insights/new-publication-mit-harvard-and-stanford-scientists-show-weaker-ties-are-more-beneficial-for-job-seekers-on-linkedin/
+[^huntr]: Huntr, *2025 Job Search Trends* (self-reported tracker data). https://huntr.co/research/2025-annual-job-search-trends-report
+[^resume]: van Inwegen, Munyikwa & Horton (2023). https://arxiv.org/abs/2301.08083
+[^bu]: Fradkin, Boston University (2025). https://www.bu.edu/articles/2025/looking-for-jobs-on-indeed-or-linkedin
+
 ## Choose your flow
 
 | Flow | The AI does | Pick it if |
