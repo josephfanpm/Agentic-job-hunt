@@ -6,7 +6,7 @@ Agents use only the facts in this file and the user's own resume files. Anything
 - Name:
 - City:
 - Email / phone / LinkedIn / GitHub:
-- Work authorization: (for example: citizen of X; eligible for Y visa. Agents ask before answering sponsorship questions.)
+- Work authorization: (for example: citizen of X; eligible for Y visa. Agents ask before answering sponsorship questions, unless Application answers below covers them.)
 - Pay floor:
 - Pay target:
 
@@ -34,6 +34,14 @@ Only tools you've used for real.
 
 ## Education
 Degree, school, graduation year.
+
+## Application answers
+Your standing answers to common form questions. Agents use them word for word, and stop to ask when a form's question isn't covered here. Auto-apply needs this section filled in.
+- Authorized to work in (country):
+- Need visa sponsorship, now or in the future (country):
+- Notice period / earliest start date:
+- Willing to relocate:
+- Voluntary questions (gender, race or ethnicity, veteran status, disability): (your answer for each, or "decline to answer")
 
 ## Sheet
 - Sheet ID:

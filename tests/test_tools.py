@@ -76,6 +76,48 @@ def test_sheet_cell_link_runs_start_at_each_line():
     assert text.count("\n") == 2 and not text.endswith("\n")
 
 
+def test_wider_searches_drop_the_team_and_add_leaders():
+    rows = people.wider(["Joist", "EverPro"], peer_titles=["product manager"])
+    assert [r[0] for r in rows] == ["Managers, any team", "Company leaders"]
+    assert rows[0][1].endswith(" AND (Joist OR EverPro)") and '"director of product"' in rows[0][1]
+    assert rows[1][1] == '(founder OR co-founder OR CEO OR COO OR "general manager") AND (Joist OR EverPro)'
+    for _, q, url in rows:
+        assert not _bare_or(q)
+        assert urllib.parse.unquote(url.split("keywords=")[1]) == q
+    custom = people.wider_for_job("Acme", cfg(linkedin={"manager_titles": ["VP product"]}))
+    assert custom[0][1] == '"VP product" AND Acme'
+
+
+def test_auto_apply_is_off_until_switched_on_in_full_mode(tmp_path, capsys):
+    home = str(tmp_path)
+    assert cli.main(["--home", home, "init", "--titles", "product manager", "--no-boards"]) == 0
+    path = tmp_path / "config.json"
+    assert cli.main(["--home", home, "mode", "full"]) == 0
+    assert config.auto_apply_on(config.load(path)) is False
+    assert "auto-apply is off" in capsys.readouterr().out
+    assert cli.main(["--home", home, "mode", "standard", "--auto-apply"]) == 2
+    assert config.load(path)["mode"] == "full"
+    capsys.readouterr()
+    assert cli.main(["--home", home, "mode", "full", "--auto-apply"]) == 0
+    assert "auto-apply is ON" in capsys.readouterr().out
+    c = config.load(path)
+    assert config.auto_apply_on(c) and c["auto_apply"]["max_per_day"] == 5 and c["auto_apply"]["min_grade"] == "B"
+    assert cli.main(["--home", home, "mode"]) == 0
+    assert "auto-apply: on, grade B or better, up to 5 a day" in capsys.readouterr().out
+    assert cli.main(["--home", home, "mode", "lean"]) == 0          # the switch only counts in full mode
+    assert config.auto_apply_on(config.load(path)) is False
+    assert cli.main(["--home", home, "mode", "full", "--no-auto-apply"]) == 0
+    assert config.auto_apply_on(config.load(path)) is False
+    assert config.load(path)["linkedin"]["browse"] is False
+
+
+@pytest.mark.parametrize("bad", [{"min_grade": "C"}, {"max_per_day": 0}, {"max_per_day": "5"}])
+def test_auto_apply_settings_are_validated(tmp_path, bad):
+    (tmp_path / "c.json").write_text(json.dumps({"auto_apply": bad}), encoding="utf-8")
+    with pytest.raises(ValueError):
+        config.load(tmp_path / "c.json")
+
+
 # ---- sheet -------------------------------------------------------------------
 def test_create_requests_cover_every_tab_and_drop_sheet1():
     schema = sheet.load_schema()
@@ -377,6 +419,10 @@ def test_cli_mode_people_and_guards(tmp_path, capsys):
     assert cli.main(["--home", home, "people", "Jobber", "Senior Product Manager, New Starts"]) == 0
     out = capsys.readouterr().out
     assert out.count("https://www.linkedin.com/search/results/people/") == 3
+    assert cli.main(["--home", home, "people", "Jobber", "Senior Product Manager, New Starts", "--wider"]) == 0
+    out = capsys.readouterr().out
+    assert out.count("https://www.linkedin.com/search/results/people/") == 5
+    assert "Managers, any team: " in out and "Company leaders: " in out
     assert cli.main(["--home", home, "due"]) == 0
     assert cli.main(["--home", home, "applied", "Nobody"]) == 2
     empty = tmp_path / "empty"

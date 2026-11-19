@@ -18,7 +18,8 @@ These need no AI, so never do them by hand:
 | New jobs, filtered, ranked, deduped | `python -m jobhunt scan` |
 | The jobs the user picked | `python -m jobhunt picks` (when they say "work my picks", follow [prompts/work-picks.md](prompts/work-picks.md)) |
 | Who the user already knows at a company | `python -m jobhunt network find "Company"` (run it before every application and outreach draft) |
-| LinkedIn searches for a job | `python -m jobhunt people "Company" "Title"` |
+| LinkedIn searches for a job | `python -m jobhunt people "Company" "Title"` (`--wider` when the first three find nobody) |
+| Whether you may submit without asking | `python -m jobhunt mode` (must show `mode: full` and `auto-apply: on`) |
 | Resume pre-flight, bullet checks and keyword gap | `python -m jobhunt check resume.pdf --jd <jd file>` |
 | Terms shared across postings, for a base resume | `python -m jobhunt terms private/jds/*.txt` |
 | A company's job board | `python -m jobhunt boards add "Company"`, or `boards add "<Workday careers URL>" --name "Company"` |
@@ -40,11 +41,13 @@ Every job, application and contact lives in the tracker, built from [sheet/schem
 4. **Tailor only from a real job description:** the saved copy, or the posting you fetched and saved ([prompts/fetch-pages.md](prompts/fetch-pages.md)). If you can't get it, leave the job for another agent or the user. Never write one from memory.
 5. **Never invent** pay, dates, locations, employers, titles, tools or metrics. Leave the cell empty instead.
 6. **Draft messages, never send them.** Put drafts in the tracker, or in Gmail as drafts if Gmail is connected ([prompts/check-email.md](prompts/check-email.md)). The user sends them.
-7. **Ask the user** before answering sponsorship or work-authorization questions, and before submitting where a referral is possible.
+7. **Ask the user** before submitting where a referral is possible, and before answering a sponsorship or work-authorization question, unless the **Application answers** section of `private/profile.md` has an answer written for that question as the form words it.
 8. **Log every application** the same day: date, company, role, pay, location, status, resume sent, link and Channel. Then take the job off Daily jobs: that list holds only jobs not yet applied to, and the Applied tab is the record. With the sheet receiver installed, ticking Applied does this automatically.
 9. **Send script output unchanged.** When a script prepares a sheet update, pass it along as it is. Never hand-type batch requests; hand-typed batches shift rows.
 10. **Save files with ATS-friendly names:** `First_Last_Resume_Company.pdf` and `First_Last_Cover_Letter_Company.pdf`. Use underscores; no dates or version numbers.
 11. **Never try to get around a captcha, login wall or rate limit.** Hand the job back to the user.
+12. **Submit only jobs the user picked or named,** unless `mode` is `full` and `auto_apply.enabled` is `true`. Then follow [prompts/auto-apply.md](prompts/auto-apply.md): its grade bar, daily limit and stop list.
+13. **Open LinkedIn only when `linkedin.browse` is `true`,** only in the user's own signed-in browser, and only by the rules in [prompts/find-person.md](prompts/find-person.md). Never read it with a fetch tool or a script, and never click Connect or Message.
 
 ## Who owns which columns
 
@@ -56,6 +59,6 @@ The schema marks each column with an owner: `scan` (written by the scan), `any` 
 - [ ] Resume tailored, compiled, and passing `python -m jobhunt check`
 - [ ] Cover letter, if the form accepts one (`check --letter`)
 - [ ] Referral checked: if the user has a contact at the company, ask them before applying
-- [ ] Form answers use only facts from `private/profile.md`; sponsorship questions go to the user
-- [ ] Message drafted for one person on the team
+- [ ] Form answers use only facts from `private/profile.md`; sponsorship questions it doesn't answer go to the user
+- [ ] Message drafted for one named person ([prompts/find-person.md](prompts/find-person.md))
 - [ ] Application logged, with Channel

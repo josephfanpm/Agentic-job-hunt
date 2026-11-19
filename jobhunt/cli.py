@@ -207,7 +207,10 @@ def cmd_people(args) -> int:
         cfg["linkedin"]["peer_titles"] = args.peer
     if args.big:
         cfg["big_companies"] = cfg["big_companies"] + [args.company]
-    print(people.plain(people.for_job(args.company, args.title or "", cfg)))
+    rows = people.for_job(args.company, args.title or "", cfg)
+    if args.wider:
+        rows += people.wider_for_job(args.company, cfg)
+    print(people.plain(rows))
     return 0
 
 
@@ -418,12 +421,33 @@ def cmd_schedule(args) -> int:
 def cmd_mode(args) -> int:
     cfg, home = _load(args)
     if not args.name:
-        print(f"mode: {cfg['mode']}   tracker: {cfg['tracker']}   (see MODES.md)")
+        auto = ""
+        if cfg["mode"] == "full":
+            a = cfg["auto_apply"]
+            auto = (f"   auto-apply: on, grade {a['min_grade']} or better, up to {a['max_per_day']} a day"
+                    if a["enabled"] else "   auto-apply: off")
+        print(f"mode: {cfg['mode']}   tracker: {cfg['tracker']}{auto}   (see MODES.md)")
         return 0
+    if args.auto_apply is not None and args.name != "full":
+        print("--auto-apply and --no-auto-apply only work with: mode full")
+        return 2
     user = config.load_user(home / "config.json")
     user["mode"] = args.name
+    if args.auto_apply is not None:
+        user.setdefault("auto_apply", {})["enabled"] = args.auto_apply
     config.save(user, home / "config.json")
     print(f"mode set to {args.name}")
+    if args.name == "full":
+        a = config.load(home / "config.json")["auto_apply"]
+        if a["enabled"]:
+            print(f"auto-apply is ON: agents submit applications for new jobs graded {a['min_grade']} or better, "
+                  f"up to {a['max_per_day']} a day, without asking first.")
+            print("They still stop for a referral, a question your profile doesn't answer, a login or a captcha, "
+                  "and they never send messages. Rules: prompts/auto-apply.md")
+            print("Turn it off with: python -m jobhunt mode full --no-auto-apply")
+        else:
+            print("auto-apply is off: agents prepare applications and you submit them.")
+            print("To have them submit too: python -m jobhunt mode full --auto-apply")
     return 0
 
 
@@ -490,6 +514,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("company"), s.add_argument("title", nargs="?")
     s.add_argument("--peer", action="append", help="peer title to search (repeatable)")
     s.add_argument("--big", action="store_true", help="large company: narrow recruiters to tech")
+    s.add_argument("--wider", action="store_true",
+                   help="add fallback searches: managers on any team, and company leaders")
     s.set_defaults(fn=cmd_people)
 
     s = sub.add_parser("picks", help="jobs you ticked Pick and haven't applied to")
@@ -522,6 +548,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("stats", help="interviews by channel (CSV tracker)").set_defaults(fn=cmd_stats)
     s = sub.add_parser("mode", help="show or set how much the AI agents do")
     s.add_argument("name", nargs="?", choices=config.MODES)
+    s.add_argument("--auto-apply", dest="auto_apply", action="store_true", default=None,
+                   help="full mode: agents also submit applications for the top matches")
+    s.add_argument("--no-auto-apply", dest="auto_apply", action="store_false",
+                   help="full mode: agents prepare applications, you submit")
     s.set_defaults(fn=cmd_mode)
     sub.add_parser("doctor", help="check the setup").set_defaults(fn=cmd_doctor)
 

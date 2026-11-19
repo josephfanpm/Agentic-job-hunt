@@ -4,6 +4,8 @@ A job search run by scripts, AI agents and one human. Scripts find and rank the 
 
 It works for any role: set your job titles in one config file. You choose how much the AI does, from almost nothing to nearly everything.
 
+**Full mode can apply by itself.** Turn on auto-apply, and the agent grades each new job, tailors a resume for the best matches, submits the applications, and names the person to message at each company. All that's left for you is sending the messages. It's off until you switch it on: see [Auto-apply](#auto-apply).
+
 ## Get started
 
 ### Option 1: let an AI agent set it up (about 10 minutes)
@@ -42,7 +44,8 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 | **Evaluate and research** | Grades a job's fit against your profile; writes a one-page company brief | Yes |
 | **Tailor** | A one-page LaTeX resume and cover letter per job, from the real job description and your own facts | Yes |
 | **Reach out** | A message matched to who's reading it. Team members get a question or a shared interest and a coffee-chat invite, not a request. Agents draft; **you send** | Yes |
-| **Apply** | Fills the application and logs it. Stops for referrals and sponsorship questions | Yes |
+| **Apply** | Fills the application and logs it, for jobs you pick. With auto-apply on in Full mode, it also submits for the top matches without asking. Stops for referrals and for questions your profile doesn't answer | Yes |
+| **Name the person** | In Full mode, the agent names one person to message per job: the hiring manager, a recruiter, or a manager who could be hiring for the role | Yes |
 | **Interview** | A story bank, a mock interview with a tough-interviewer setting, and a debrief | Yes |
 | **Offer** | Side-by-side comparison and a negotiation draft | Yes |
 
@@ -75,7 +78,7 @@ Sending more applications doesn't fix low odds per application. It also uses the
 | **3. Check who you know** | **Who you know** shows contacts at each company, from your LinkedIn data. `network find` lists them | **Referral first.** The single biggest factor in the data: about 36 times the offer rate of applying cold |
 | **4. Find the right person** | Three LinkedIn searches per job: recruiters, hiring managers and peers | **Reach a person, not a pile.** A direct message turns a cold application into a conversation |
 | **5. Tailor** | A resume per job, built from your own record of real work and checked to make sure it reads correctly | **Tailoring and specifics.** Specific, true detail stands out where generic AI text doesn't |
-| **6. Apply** | An agent fills in the form for jobs *you* picked. It stops when a referral is possible and for sponsorship questions | **No mass-applying.** The odds of a cold application are too low to make volume worth it |
+| **6. Apply** | An agent fills in the form for jobs *you* picked. With auto-apply on, it also submits for the top-graded matches, up to a daily limit. It stops when a referral is possible and for questions your profile doesn't answer | **No mass-applying.** The odds of a cold application are too low to make volume worth it, so auto-apply is limited to strong fits and a few a day |
 | **7. Reach out** | Drafts a short message matched to the reader. For a team member: an interesting question, a point about their work, or something you share, plus a coffee-chat invite. **You send it** | **Relationship before the ask.** A message sent by you, with a real detail and no request, starts a conversation; the referral comes after |
 | **8. Follow up and measure** | Lists follow-ups due, and compares interview rates by channel: referral, hiring-manager message, cold | **Do more of what works.** Your own numbers show where to spend next week's time |
 
@@ -130,13 +133,38 @@ Every tailored resume follows these rules ([prompts/tailor-resume.md](prompts/ta
 |---|---|---|
 | **Lean** | Only what you ask, for jobs you pick | You want the lowest AI usage |
 | **Standard** | Reviews the scan, tailors and drafts for jobs you pick | You want a balance |
-| **Full** | Evaluates every new job and prepares applications ahead | You want the least work |
+| **Full** | Evaluates every new job, prepares applications ahead, and names the person to message. With auto-apply on, it submits them too | You want the least work |
 
 ```bash
 python -m jobhunt mode lean      # or standard, full
 ```
 
 In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](MODES.md) has the full comparison.
+
+### Auto-apply
+
+```bash
+python -m jobhunt mode full --auto-apply       # turn it on
+python -m jobhunt mode full --no-auto-apply    # back to: agents prepare, you submit
+```
+
+With auto-apply on, your agent works through each day's new jobs by itself:
+
+1. **Grades every new job** against your profile, from the real job description.
+2. **Tailors a resume** (and a cover letter, if the form takes one) for jobs graded B or better, and runs the resume check.
+3. **Fills in and submits the application**, up to 5 a day. It saves the answers it entered to `private/applications/` first.
+4. **Names one person to message:** the hiring manager, then a recruiter. If it finds neither, it picks a manager in the same function who could be hiring for the role, and labels them "not confirmed".
+5. **Drafts the message** and logs the application.
+
+Then it gives you a list of messages to send. Sending them is the one step left to you.
+
+It still stops and hands a job back to you when:
+
+- you know someone at the company (ask for a referral first)
+- the form asks something your profile doesn't answer, such as a sponsorship question
+- the site needs an account, a password, a captcha or an assessment
+
+To fill in forms, the agent needs a tool that can drive a browser. To find people, it uses the posting, the company's site and a web search. It opens LinkedIn only if you set `linkedin.browse` to `true`, and then only in your own signed-in browser, a few pages a day. LinkedIn's terms don't allow automated use, so that setting carries some risk to your account. [MODES.md](MODES.md#auto-apply-full-mode-only) has the settings; [prompts/auto-apply.md](prompts/auto-apply.md) and [prompts/find-person.md](prompts/find-person.md) have the rules agents follow.
 
 ## Commands
 
@@ -145,7 +173,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 | `python -m jobhunt init` | Set up your private folder, profile, config and tracker |
 | `python -m jobhunt scan` | Find, filter and rank new jobs (`--dry-run` to preview) |
 | `python -m jobhunt boards add "Company"` | Find and track a company's job board (or pass a Workday careers-page URL) |
-| `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers |
+| `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers (`--wider` adds managers on any team and company leaders) |
 | `python -m jobhunt picks` | The jobs you ticked Pick and haven't applied to |
 | `python -m jobhunt network find "Company"` | Who you already know there, from your LinkedIn data export |
 | `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight, bullet checks and keyword gap (`--bullets` lists each bullet and what it's missing) |
@@ -153,7 +181,7 @@ In Lean mode with the CSV tracker, the daily scan uses no AI at all. [MODES.md](
 | `python -m jobhunt applied "Company" --channel Referral` | Log an application |
 | `python -m jobhunt due` | Follow-ups due today |
 | `python -m jobhunt stats` | Interviews by channel |
-| `python -m jobhunt mode` | Show or change the flow |
+| `python -m jobhunt mode` | Show or change the flow (`mode full --auto-apply` lets agents submit) |
 | `python -m jobhunt schedule on` | Run the scan automatically at log-on (`--at 08:00` for a set time) |
 | `python -m jobhunt doctor` | Check the setup |
 
@@ -163,7 +191,7 @@ Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwe
 
 ## The rules that make it work
 
-- **You pick, agents execute.** The scan gives you a short ranked list. You choose; agents do the rest.
+- **You pick, agents execute.** The scan gives you a short ranked list. You choose; agents do the rest. Auto-apply is the one exception, and only when you turn it on: the agent then picks by grade, within a daily limit.
 - **Referral before application.** Line up a referral first where you can. The tracker records the channel for every application, so you can see which one gets interviews.
 - **Message a person for every application.**
 - **Never invent anything.** Agents tailor only from a job description they fetched and facts in your own files. Pay, dates and locations are shown only when the posting states them.
@@ -179,8 +207,8 @@ Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwe
 - **Prompts:**
   - Getting started: [setup](prompts/setup.md), [profile-interview](prompts/profile-interview.md) (your experience bank), [kickoff](prompts/kickoff.md) (for any agent, including Muse and Grok)
   - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md), [fetch-pages](prompts/fetch-pages.md)
-  - Daily: [work-picks](prompts/work-picks.md) (what "work my picks" does)
-  - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md), [check-email](prompts/check-email.md)
+  - Daily: [work-picks](prompts/work-picks.md) (what "work my picks" does), [auto-apply](prompts/auto-apply.md) (Full mode)
+  - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [find-person](prompts/find-person.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md), [check-email](prompts/check-email.md)
   - Applying: [tailor-resume](prompts/tailor-resume.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
   - Interviews and offers: [interview-prep](prompts/interview-prep.md), [mock-interview](prompts/mock-interview.md), [offer](prompts/offer.md), [review](prompts/review.md)
 
@@ -241,14 +269,14 @@ Job seekers spend most of their hours on low-value work: searching boards, refor
 - Be usable by someone who has never opened a terminal.
 
 **Non-goals**
-- **Applying to as many jobs as possible.** Volume isn't the goal; interviews are.
+- **Applying to as many jobs as possible.** Volume isn't the goal; interviews are. Auto-apply submits only strong fits, a few a day.
 - **Sending anything under the user's name without them.** Messages are drafts; the person sends.
 - **Writing experience the person doesn't have.** Every claim must trace to the person's own files.
 - **Locking users into one AI vendor.**
 
 ### Product principles
 
-1. **The person picks; agents execute.** Judgment about *which* job stays human. Effort on *how* to apply moves to agents.
+1. **The person picks; agents execute.** Judgment about *which* job stays human by default. Effort on *how* to apply moves to agents. A person can hand over the picking too, by turning on auto-apply.
 2. **Scripts before AI.** Anything a rule can do (search, filter, dedupe, rank, track) is a script: free, fast, repeatable and testable. AI is reserved for writing and judgment.
 3. **No invented facts.** Pay, dates and locations appear only when the posting states them. Resume content comes only from the person's profile.
 4. **One source of truth, many agents.** A shared tracker and a written contract let several agents work side by side without overwriting each other.
@@ -274,6 +302,8 @@ flowchart LR
 |---|---|---|---|
 | **Rule-based scan, no AI** | Have an LLM read and score every posting | A scan reads hundreds of postings a day. Rules do it in about 3 seconds, cost nothing, and give the same answer every time | Ranking is cruder than a human read. Standard and Full modes add an AI review on top for people who want it |
 | **Three modes: Lean, Standard, Full** | One fixed workflow | AI usage and cost vary a lot by person. Lean uses none on a quiet day; Full prepares applications ahead of time | More documentation and more paths to test |
+| **Auto-apply is opt-in, graded and capped** | Submit every match, or never submit unprompted | Some people want the least work possible, and filling in forms is the lowest-value part of a search. A grade bar (B or better), a limit of 5 a day and a referral stop keep it from turning into mass-applying | More cold applications than the pick-first flow. The person must keep their standing form answers up to date |
+| **Agents look for people outside LinkedIn first** | Have the agent browse LinkedIn for every job | The posting, the company's site and a web search often name the person, at no risk to the account. Browsing LinkedIn is a separate switch, in the person's own browser, a few pages a day | Sometimes the agent returns search links instead of a name |
 | **The person sends every message** | Auto-send outreach | A message under someone's name is theirs to send. Auto-sent outreach is how bots get spotted and accounts get flagged | One manual step per message |
 | **Referral first, then apply** | Apply immediately, ask for a referral later | Many referral systems only credit a referral made before the application | Some applications wait a day or two for a reply |
 | **CSV tracker by default; Google Sheet optional** | Require Google Sheets | Local files need no account or connector, and a scheduled scan needs no agent | Spreadsheet features like dropdowns only come with the Sheet option |
@@ -312,16 +342,16 @@ The `stats` command won't rank channels until there are about 20 applications in
 | Risk | Mitigation |
 |---|---|
 | The AI overstates experience | Profile-only rule; every number must have a source; the person reviews every resume before it goes out |
-| A job board changes its feed | Each source is isolated, so one failure doesn't stop the scan; 109 automated tests run on every change |
+| A job board changes its feed | Each source is isolated, so one failure doesn't stop the scan; 114 automated tests run on every change |
 | Two agents overwrite each other | Insert-only writes, claiming a job in Notes, and a scan that remembers what it has already shown |
 | Personal data leaks | Everything personal lives in `private/`, which git never uploads; the scan sends only ordinary requests for public listings |
 | Too complex for non-technical users | A click-by-click setup guide, a guided setup command, and a no-AI mode that works on its own |
 
 ### What's next
 
-- **Opt-in auto-submit for standard application forms**, with a dry run by default. It fills the form and takes a screenshot, and submits only on an explicit go-ahead and only for jobs the person picked.
+- **A dry-run setting for auto-apply**, which fills each form and saves a screenshot without submitting, for a first week of checking what would go out.
 - **An MCP server**, so any AI tool can use the scan, tracker and checks directly.
 - **Presets for other roles** (engineering, design, data, nursing), so setup is one choice instead of a config file.
 - **A claim check** that traces every resume bullet back to a line in the person's profile.
 
-**Deliberately not planned:** mass-applying, auto-sending messages, and scraping sites that don't offer public feeds.
+**Deliberately not planned:** applying with no grade bar or daily limit, auto-sending messages, and scraping sites that don't offer public feeds.

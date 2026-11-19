@@ -14,6 +14,10 @@ DEFAULTS: dict = {
     # standard = an agent also reviews the scan and drafts messages
     # full = an agent evaluates every new job and prepares applications unprompted
     "mode": "lean",
+    # Full mode only. Off = the agent prepares applications and you submit them.
+    # On = the agent also submits, for jobs graded min_grade or better, up to max_per_day.
+    # Turn on with: python -m jobhunt mode full --auto-apply   (prompts/auto-apply.md)
+    "auto_apply": {"enabled": False, "max_per_day": 5, "min_grade": "B"},
     "tracker": "csv",           # "csv" (no connector needed) or "sheet" (Google Sheets)
     "sheet_id": "",
     "sheet_webhook": "",        # Apps Script web app URL (sheet/README-apps-script.md)
@@ -56,7 +60,10 @@ DEFAULTS: dict = {
     "jobspy": {"searches": [], "sites": ["indeed", "linkedin", "zip_recruiter"], "hours_old": 30},
     # manager/peer titles: empty = derived from titles.include
     # company_aliases: extra names for `network find`, e.g. {"Optum": ["optum", "unitedhealth"]}
-    "linkedin": {"manager_titles": [], "peer_titles": [], "company_aliases": {}},
+    # browse: let an agent open LinkedIn in your own signed-in browser to find the person
+    # to message (prompts/find-person.md). Off by default; the daily caps keep it slow.
+    "linkedin": {"manager_titles": [], "peer_titles": [], "company_aliases": {},
+                 "browse": False, "max_searches_per_day": 10, "max_profiles_per_day": 10},
     "email_digest": False,      # Google Sheet receiver emails you the top new jobs after each scan
     "email_top": 10,            # how many jobs the email lists
     "files": {"name_prefix": ""},   # e.g. "Ada_Lovelace" -> Ada_Lovelace_Resume_Company.pdf
@@ -92,7 +99,17 @@ def load(path: Path | None = None) -> dict:
         raise ValueError(f"mode must be one of {MODES}, got {cfg['mode']!r}")
     if cfg["tracker"] not in ("csv", "sheet"):
         raise ValueError("tracker must be 'csv' or 'sheet'")
+    auto = cfg["auto_apply"]
+    if auto["min_grade"] not in ("A", "B"):
+        raise ValueError("auto_apply.min_grade must be 'A' or 'B'")
+    if not isinstance(auto["max_per_day"], int) or isinstance(auto["max_per_day"], bool) or auto["max_per_day"] < 1:
+        raise ValueError("auto_apply.max_per_day must be a whole number, 1 or more")
     return cfg
+
+
+def auto_apply_on(cfg: dict) -> bool:
+    """Agents submit applications only in full mode with the switch on."""
+    return cfg["mode"] == "full" and bool(cfg["auto_apply"]["enabled"])
 
 
 def save(user_cfg: dict, path: Path | None = None) -> Path:

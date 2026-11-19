@@ -17,6 +17,17 @@ Put every OR group in parentheses, before or between the ANDs. Never use a bare 
 - **Large companies:** add `AND (product OR tech OR technical)` to the recruiter search, so it finds tech recruiters rather than warehouse or retail hiring.
 - **Other functions:** the hiring manager titles follow your job title. A software engineer gets `("director of engineering" OR "engineering manager" ...)`. Set `linkedin.manager_titles` in your config to choose your own.
 
+## When those find nobody
+
+`python -m jobhunt people "Company" "Job title" --wider` adds two fallback searches:
+
+| Who | Search |
+|---|---|
+| Managers, any team | The hiring manager titles `AND <company>`, with no team words |
+| Company leaders | `(founder OR "co-founder" OR CEO OR COO OR "general manager") AND <company>`, for small companies |
+
+[find-person.md](find-person.md) says how to choose a likely hiring manager from them.
+
 ## In the sheet
 
 Each cell holds three lines: `Recruiters: …`, `Hiring managers: …`, `Peers: …`. Each line links to `https://www.linkedin.com/search/results/people/?keywords=<url-encoded search>`. The scan fills this cell for every new job. For any other job, run `python -m jobhunt people "Company" "Job title"`.

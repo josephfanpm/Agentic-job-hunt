@@ -115,6 +115,32 @@ def for_job(company: str, title: str, cfg: dict) -> list[tuple[str, str, str]]:
                     manager_titles_=li.get("manager_titles") or None)
 
 
+LEADERS = ["founder", "co-founder", "CEO", "COO", "general manager"]
+
+
+def wider(company: str | list[str], *, peer_titles: list[str] | None = None,
+          manager_titles_: list[str] | None = None) -> list[tuple[str, str, str]]:
+    """Fallback searches for when no hiring manager or recruiter turns up.
+
+    The first drops the team words, so it finds any manager in the function who
+    could be hiring for the role. The second is for small companies, where a
+    founder or general manager does the hiring.
+    """
+    managers = manager_titles_ or manager_titles(peer_titles or ["product manager"])
+    names = company if isinstance(company, list) else [company]
+    who = group(names)
+    rows = [("Managers, any team", f"{group(managers)} AND {who}"),
+            ("Company leaders", f"{group(LEADERS)} AND {who}")]
+    return [(label, q, BASE + urllib.parse.quote(q, safe="()")) for label, q in rows]
+
+
+def wider_for_job(company: str, cfg: dict) -> list[tuple[str, str, str]]:
+    """Fallback searches for one company, using the user's config."""
+    li = cfg.get("linkedin", {})
+    peers = li.get("peer_titles") or cfg["titles"]["include"][:2] or ["product manager"]
+    return wider(company, peer_titles=peers, manager_titles_=li.get("manager_titles") or None)
+
+
 def cell(rows: list[tuple[str, str, str]]) -> dict:
     """A Google Sheets cell: three lines, each a clickable link."""
     text, runs = "", []

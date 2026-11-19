@@ -19,6 +19,8 @@ There are two reasons to message someone, and they need different messages.
 - Ask for very little: 10–15 minutes, or "open to a quick chat?"
 - Keep it under about 300 characters, so it fits a connection request.
 
+**A likely hiring manager you couldn't confirm** (the fallback in [find-person.md](find-person.md)): don't write as if the role is theirs. Say you applied for [role], connect it to one result of yours, and ask whether they're the right person or could point you to who is. Keep it under about 300 characters.
+
 For a referral from someone you already know, or after a coffee chat, name the job and its ID, attach the tailored resume, and make it easy: "If you're comfortable, I'd love a referral for [role, ID]. I'll send anything you need."
 
 ## 2. No open role yet: get on their radar

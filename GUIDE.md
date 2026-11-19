@@ -72,7 +72,7 @@ python -m jobhunt mode lean      # or standard, full
 
 - **Lean:** the AI acts only on jobs you pick. Lowest usage.
 - **Standard:** the AI also reviews each scan and drafts follow-ups.
-- **Full:** the AI evaluates every new job and prepares applications ahead of time.
+- **Full:** the AI evaluates every new job, prepares applications ahead of time, and names the person to message. Add `--auto-apply` (`python -m jobhunt mode full --auto-apply`) and it submits the applications too, so you only send the messages. First fill in the **Application answers** section of `private/profile.md`: your standing answers on work authorization, sponsorship and the voluntary questions.
 
 [MODES.md](MODES.md) compares them. You can switch whenever you like.
 
@@ -266,6 +266,8 @@ Everything is in `private/config.json`. [examples/config.example.json](examples/
 | Where it looks | `companies` (or `boards add`) and `sources` |
 | How jobs rank | `keywords.boost`, `priority_companies`, `pay`, `locations.prefer` |
 | The LinkedIn searches | `linkedin.manager_titles` and `linkedin.peer_titles` |
+| Auto-apply's limits (Full mode) | `auto_apply.max_per_day` and `auto_apply.min_grade` |
+| Whether an agent may open LinkedIn | `linkedin.browse`, `linkedin.max_searches_per_day`, `linkedin.max_profiles_per_day` |
 | Columns in the tracker | `sheet/schema.json` |
 | Resume look | `resume/template.tex` (keep the `fontspec` line with `Ligatures=NoCommon`) |
 | Message style | `prompts/outreach.md` |
@@ -274,7 +276,9 @@ Everything is in `private/config.json`. [examples/config.example.json](examples/
 
 ## FAQ
 
-**Will it apply to jobs without asking me?** No. The scan only lists roles. Agents work on jobs you pick, and stop for referrals and sponsorship questions. In Full mode, agents prepare applications ahead of time, but you still choose what goes out.
+**Will it apply to jobs without asking me?** Only if you turn on auto-apply (`python -m jobhunt mode full --auto-apply`). Otherwise no: the scan only lists roles, agents work on jobs you pick, and in Full mode they prepare applications ahead of time but you choose what goes out. With auto-apply on, agents submit for new jobs graded B or better, up to 5 a day. They still stop for referrals and for questions your profile doesn't answer, and they never send messages. [MODES.md](MODES.md#auto-apply-full-mode-only) has the details.
+
+**Will it use my LinkedIn account?** Not unless you set `linkedin.browse` to `true`. By default, agents look for the person to message in the posting, on the company's site and through a web search, and give you LinkedIn search links to open yourself. With the setting on, an agent opens a few LinkedIn pages a day in your own signed-in browser and never clicks Connect or Message. LinkedIn's terms don't allow automated use, so the setting carries some risk to your account.
 
 **Will it make up experience?** No. Agents use only facts in `private/profile.md` and your own files, and the scan shows pay, dates and locations only when the posting states them. Read every resume once before you send it; you're the last check.
 
