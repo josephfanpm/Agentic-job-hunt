@@ -162,7 +162,17 @@ It still stops and hands a job back to you when:
 
 - you know someone at the company (ask for a referral first)
 - the form asks something your profile doesn't answer, such as a sponsorship question
-- the site needs an account, a password, a captcha or an assessment
+- the site needs an assessment or a video, or a sign-in you haven't done yet
+- the form asks you to accept an arbitration agreement, a background check or a signature
+
+Three things used to stop it and no longer do:
+
+| The form... | What happens now |
+|---|---|
+| asks a common question (work authorization, notice period, the voluntary questions) | Answered from your answer bank, `private/answers.json`. A question it has never seen is saved, you answer it once with `python -m jobhunt answers`, and every later form uses it |
+| emails a security code (Greenhouse does this) | Read from your inbox, read-only, and typed in. Set up once: `python -m jobhunt mailcode` |
+| shows an "are you human" check | Everything else is filled in first. You get a desktop notice, answer the check yourself, and the run submits and logs the result. The tool never solves or works around these checks: they exist to confirm a person is there |
+| needs a careers account (Amazon, Workday) | Sign in once with `python -m jobhunt signin <url>`. The browser profile is kept, so later runs are already signed in |
 
 To fill in forms, the agent needs a tool that can drive a browser. To find people, it uses the posting, the company's site and a web search. It opens LinkedIn only if you set `linkedin.browse` to `true`, and then only in your own signed-in browser, a few pages a day. LinkedIn's terms don't allow automated use, so that setting carries some risk to your account. [MODES.md](MODES.md#auto-apply-full-mode-only) has the settings; [prompts/auto-apply.md](prompts/auto-apply.md) and [prompts/find-person.md](prompts/find-person.md) have the rules agents follow.
 
@@ -182,6 +192,10 @@ To fill in forms, the agent needs a tool that can drive a browser. To find peopl
 | `python -m jobhunt due` | Follow-ups due today |
 | `python -m jobhunt stats` | Interviews by channel |
 | `python -m jobhunt mode` | Show or change the flow (`mode full --auto-apply` lets agents submit) |
+| `python -m jobhunt apply <url> --company "Company" --resume file.pdf` | Fill and submit one application in your own browser (`--cover` adds a cover letter, `--dry-run` fills without submitting) |
+| `python -m jobhunt answers` | Questions forms asked that you haven't answered yet (`answers set 1 "Yes"` saves one for every future form) |
+| `python -m jobhunt signin <url>` | Sign in to a careers site once; it stays signed in |
+| `python -m jobhunt mailcode` | Set up and test the reader for emailed security codes |
 | `python -m jobhunt schedule on` | Run the scan automatically at log-on (`--at 08:00` for a set time) |
 | `python -m jobhunt doctor` | Check the setup |
 

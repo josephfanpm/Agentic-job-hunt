@@ -442,7 +442,7 @@ def cmd_mode(args) -> int:
         if a["enabled"]:
             print(f"auto-apply is ON: agents submit applications for new jobs graded {a['min_grade']} or better, "
                   f"up to {a['max_per_day']} a day, without asking first.")
-            print("They still stop for a referral, a question your profile doesn't answer, a login or a captcha, "
+            print("They still stop for a referral or a question you haven't answered, wait for you at a sign-in or a human check, "
                   "and they never send messages. Rules: prompts/auto-apply.md")
             print("Turn it off with: python -m jobhunt mode full --no-auto-apply")
         else:
@@ -554,6 +554,8 @@ def build_parser() -> argparse.ArgumentParser:
                    help="full mode: agents prepare applications, you submit")
     s.set_defaults(fn=cmd_mode)
     sub.add_parser("doctor", help="check the setup").set_defaults(fn=cmd_doctor)
+    from jobhunt.apply import commands as apply_commands
+    apply_commands.register(sub)
 
     s = sub.add_parser("schedule", help="run the scan automatically on this computer")
     s.add_argument("action", choices=["on", "off", "status"])

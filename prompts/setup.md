@@ -71,7 +71,7 @@ Tell the user, in three or four short lines:
 - that each morning they tick **Pick** next to 2–5 jobs (in the sheet, on their phone, or from the morning email), then tell you "work my picks"
 - that you never send messages, and never submit anything without asking them first
 
-If they chose full, also ask: "Do you want me to submit applications for the best matches by myself, up to 5 a day? You'd only need to send the messages." If yes, fill in the **Application answers** section of `private/profile.md` with them (work authorization, sponsorship, notice period, the voluntary questions), then run `python -m jobhunt mode full --auto-apply`. Tell them how to turn it off.
+If they chose full, also ask: "Do you want me to submit applications for the best matches by myself, up to 5 a day? You'd only need to send the messages." If yes, fill in the **Application answers** section of `private/profile.md` with them (work authorization, sponsorship, notice period, the voluntary questions), run `python -m jobhunt answers init` and put the same answers in `private/answers.json` (the `apply` command reads that file), then run `python -m jobhunt mode full --auto-apply`. Offer the two optional setups in [MODES.md](../MODES.md#what-the-apply-command-handles): the emailed-code reader and a one-time sign-in for careers sites they use. Tell them how to turn it off.
 
 Then suggest one more step: download their LinkedIn data so you can check who they know at each company before they apply. Give them the clicks from "Add your LinkedIn data" in [START-HERE.md](../START-HERE.md); when the full archive arrives, run `python -m jobhunt network build "<folder>"` for them.
 

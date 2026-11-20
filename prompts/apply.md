@@ -12,7 +12,7 @@ These steps are for jobs the user picked or named. In Full mode with auto-apply 
    - **Short essays** ("tell us about a project…"): 100–200 words. Use the situation, what you did, and the result with a number. Use the project closest to the job.
    - **Salary:** use the posted range or the user's floor from the profile. Never go below the floor.
    - **Location or relocation:** say yes to relocating without naming a preferred city, unless the user says otherwise.
-4. **Submit**, or hand back to the user if a captcha, an account login or an assessment blocks you. Never fight a captcha.
+4. **Submit**, or hand back to the user if a captcha, an account login or an assessment blocks you. Never fight a captcha. `python -m jobhunt apply <url> --company "Company" --resume <pdf>` does the filling and submitting from the user's saved answers, and waits for the user at a human check or sign-in ([MODES.md](../MODES.md#what-the-apply-command-handles)).
 5. **Log it** in the Applied tab the same day, with Channel: Referral, Hiring manager message, Cold application or Auto-apply. Tick Applied on the Daily jobs row.
 6. **Draft one message** to the person [find-person.md](find-person.md) leads to, using [outreach.md](outreach.md), and put it in the job's Message cell for the user to send.
 7. **Set Follow up on** to 7 days out.

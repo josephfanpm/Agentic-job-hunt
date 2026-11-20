@@ -17,7 +17,13 @@ DEFAULTS: dict = {
     # Full mode only. Off = the agent prepares applications and you submit them.
     # On = the agent also submits, for jobs graded min_grade or better, up to max_per_day.
     # Turn on with: python -m jobhunt mode full --auto-apply   (prompts/auto-apply.md)
-    "auto_apply": {"enabled": False, "max_per_day": 5, "min_grade": "B"},
+    # minutes_between: gap left between two submissions. wait_for_user_minutes: how long a filled
+    # form waits for you at a captcha, a sign-in or an emailed code before it gives up unsent.
+    "auto_apply": {"enabled": False, "max_per_day": 5, "min_grade": "B", "browser": "chrome",
+                   "minutes_between": 2, "wait_for_user_minutes": 15},
+    # Reads the security code some job sites email mid-application, over IMAP, read-only.
+    # The app password goes in private/email-password.txt or JOBHUNT_EMAIL_PASSWORD, never here.
+    "email_codes": {"enabled": False, "user": "", "host": "imap.gmail.com", "folder": "INBOX"},
     "tracker": "csv",           # "csv" (no connector needed) or "sheet" (Google Sheets)
     "sheet_id": "",
     "sheet_webhook": "",        # Apps Script web app URL (sheet/README-apps-script.md)

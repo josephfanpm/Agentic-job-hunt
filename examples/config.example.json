@@ -37,5 +37,6 @@
   },
   "linkedin": {"manager_titles": [], "peer_titles": [], "company_aliases": {},
                "browse": false, "max_searches_per_day": 10, "max_profiles_per_day": 10},
-  "auto_apply": {"enabled": false, "max_per_day": 5, "min_grade": "B"}
+  "auto_apply": {"enabled": false, "max_per_day": 5, "min_grade": "B", "minutes_between": 2, "wait_for_user_minutes": 15},
+  "email_codes": {"enabled": false, "user": "", "host": "imap.gmail.com"}
 }

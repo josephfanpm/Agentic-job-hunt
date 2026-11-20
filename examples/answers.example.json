@@ -1,0 +1,43 @@
+{
+  "answers": [
+    {"is": ["first name", "legal first name", "given name", "preferred first name", "preferred name"], "answer": "Ada"},
+    {"is": ["last name", "legal last name", "family name", "surname"], "answer": "Lovelace"},
+    {"is": ["name", "full name", "legal name", "full legal name", "your name"], "answer": "Ada Lovelace"},
+    {"is": ["email", "email address", "e-mail"], "answer": "ada@example.com"},
+    {"is": ["phone", "phone number", "mobile", "mobile phone", "mobile number", "telephone"], "answer": "+1 555 010 0000"},
+    {"is": ["country"], "answer": ["United States"]},
+    {"is": ["location", "location (city)", "city", "current location"], "answer": ["London, England, United Kingdom", "London, UK", "London"]},
+    {"ask": ["where are you", "located"], "answer": ["London, England, United Kingdom", "London, UK", "London"]},
+    {"ask": ["linkedin"], "answer": "https://www.linkedin.com/in/example"},
+    {"ask": ["github"], "answer": "https://github.com/example"},
+    {"is": ["website", "portfolio", "portfolio url", "other website", "personal website"], "answer": "https://example.com"},
+    {"is": ["current company", "company", "current employer", "current or most recent company"], "answer": "Example Co"},
+
+    {"ask": ["authorized to work", "united states"], "answer": "Yes"},
+    {"ask": ["authorization to work", "united states"], "answer": "Yes"},
+    {"ask": ["eligible to work", "united states"], "answer": "Yes"},
+    {"ask": ["sponsorship"], "country": "US", "answer": "No"},
+    {"ask": ["sponsorship", "united states"], "answer": "No"},
+
+    {"ask": ["notice period"], "answer": "2 weeks"},
+    {"ask": ["earliest", "start date"], "answer": "Two weeks after an offer"},
+    {"ask": ["willing to relocate"], "answer": "Yes"},
+    {"ask": ["salary expectation"], "answer": "Within the posted range for this level"},
+    {"ask": ["how did you hear"], "answer": ["Job board", "Company website", "Other"]},
+    {"ask": ["ever worked", "before"], "answer": "No"},
+    {"ask": ["previously", "employed"], "answer": "No"},
+
+    {"ask": ["gender"], "not": ["transgender"], "answer": ["Decline", "Prefer not", "I don't wish", "I do not wish"]},
+    {"ask": ["transgender"], "answer": ["Decline", "Prefer not", "I don't wish", "I do not wish"]},
+    {"ask": ["hispanic"], "answer": ["Decline", "Prefer not", "I don't wish"]},
+    {"ask": ["race"], "answer": ["Decline", "Prefer not", "I don't wish", "I do not wish"]},
+    {"ask": ["ethnicity"], "answer": ["Decline", "Prefer not", "I don't wish", "I do not wish"]},
+    {"ask": ["veteran"], "answer": ["I am not a protected veteran", "I am not a veteran", "Decline", "Prefer not"]},
+    {"ask": ["disability"], "answer": ["I do not want to answer", "I don't wish to answer", "Decline", "Prefer not"]},
+
+    {"ask": ["privacy policy"], "answer": "Yes"},
+    {"ask": ["privacy notice"], "answer": "Yes"},
+    {"ask": ["consent", "processing"], "answer": "Yes"},
+    {"ask": ["certify", "true"], "answer": "Yes"}
+  ]
+}

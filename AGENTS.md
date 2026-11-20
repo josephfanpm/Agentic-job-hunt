@@ -45,7 +45,7 @@ Every job, application and contact lives in the tracker, built from [sheet/schem
 8. **Log every application** the same day: date, company, role, pay, location, status, resume sent, link and Channel. Then take the job off Daily jobs: that list holds only jobs not yet applied to, and the Applied tab is the record. With the sheet receiver installed, ticking Applied does this automatically.
 9. **Send script output unchanged.** When a script prepares a sheet update, pass it along as it is. Never hand-type batch requests; hand-typed batches shift rows.
 10. **Save files with ATS-friendly names:** `First_Last_Resume_Company.pdf` and `First_Last_Cover_Letter_Company.pdf`. Use underscores; no dates or version numbers.
-11. **Never try to get around a captcha, login wall or rate limit.** Hand the job back to the user.
+11. **Never try to get around a captcha, login wall or rate limit.** Never solve a captcha, use a solving service, create an account or type a password. `python -m jobhunt apply` fills the rest of the form and waits for the user to answer the check or sign in; outside that command, hand the job back to the user.
 12. **Submit only jobs the user picked or named,** unless `mode` is `full` and `auto_apply.enabled` is `true`. Then follow [prompts/auto-apply.md](prompts/auto-apply.md): its grade bar, daily limit and stop list.
 13. **Open LinkedIn only when `linkedin.browse` is `true`,** only in the user's own signed-in browser, and only by the rules in [prompts/find-person.md](prompts/find-person.md). Never read it with a fetch tool or a script, and never click Connect or Message.
 

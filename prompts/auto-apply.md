@@ -19,8 +19,8 @@ Work the best grade first, then the newest posting. Jobs over the daily limit wa
 Prepare everything you can, write `waiting: <reason>` in Notes, and don't submit when:
 
 - **A referral is possible.** `python -m jobhunt network find "Company"` shows a warm contact (they replied, endorsed or recommended the user), or the company is in `priority_companies`.
-- **The form asks something the profile doesn't answer.** Use the **Application answers** section of `private/profile.md` word for word. If a sponsorship or work-authorization question isn't covered there, or is worded differently enough that the written answer might not be true for it (for example "now or in the future"), stop. Never guess.
-- **The site wants an account, a password, a verification code, a captcha, an assessment or a video.** If the user's browser is already signed in to that site, carry on. Never create an account, type a password or work around a wall (Rule 11 in [AGENTS.md](../AGENTS.md)).
+- **The form asks something the user hasn't answered.** `python -m jobhunt apply` answers from `private/answers.json` and stops, unsent, at a required question with no saved answer. Short essays about this job are yours to write from the profile (see step 3). Everything else on the list `python -m jobhunt answers` prints is the user's to answer: never add a work-authorization, sponsorship or voluntary answer to the bank yourself, and never guess.
+- **The site wants an assessment or a video,** or a sign-in the user hasn't done. Never create an account, type a password, solve a captcha or work around a wall (Rule 11 in [AGENTS.md](../AGENTS.md)). The `apply` command covers the rest: it reads an emailed security code when `email_codes` is set up, and at an "are you human" check or a sign-in page it notifies the user and waits. If the wait runs out, write `waiting: human check` or `waiting: sign in (python -m jobhunt signin <url>)` in Notes and move on.
 - **The form asks the user to agree to more than "these answers are true":** a background check, an arbitration or non-compete agreement, or a signature.
 - **The resume fails `python -m jobhunt check`,** or you couldn't get the real job description.
 - **The posting has changed:** it's closed, or its title or location no longer matches the saved description.
@@ -29,9 +29,9 @@ Prepare everything you can, write `waiting: <reason>` in Notes, and don't submit
 
 1. **Claim it** in Notes: `Claude 2026-11-18: auto-apply`.
 2. **Tailor** with [tailor-resume.md](tailor-resume.md). The check must pass.
-3. **Fill the form** by the rules in [apply.md](apply.md), step 3.
+3. **Fill the form** with `python -m jobhunt apply <url> --company "Company" --role "Role" --resume <pdf> --country <US|CA|...> --dry-run`, adding `--cover <pdf>` when you wrote a cover letter. Read its output. If it lists an essay question, write the answer by the rules in [apply.md](apply.md), step 3, save it in the job's folder as `answers.json` (`{"words from the question": "answer"}`), and run the dry run again. If it lists any other unanswered question, stop and hand the job back. If your agent has no terminal, fill the form by hand by the rules in apply.md.
 4. **Keep a record before submitting.** Save `private/applications/<Company>__<Role>/answers.md` with every question and the answer you entered. Add a screenshot of the finished form if your tool can take one.
-5. **Submit once.** Wait for the confirmation page or message. If you can't tell whether it went through, don't submit again: write `submitted? check email` in Notes.
+5. **Submit once:** the same command without `--dry-run`. It prints `SUBMITTED` only after the confirmation page. Wait for the confirmation page or message. If you can't tell whether it went through, don't submit again: write `submitted? check email` in Notes.
 6. **Log it** in the Applied tab with Channel **Auto-apply**, and tick Applied.
 7. **Find the person** with [find-person.md](find-person.md) and put them in the Hiring manager cell.
 8. **Draft one message** with [outreach.md](outreach.md) in the Message cell. Never send it.
