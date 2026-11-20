@@ -36,11 +36,11 @@ SCAN_JS = r"""
     return (e.getAttribute && e.getAttribute('aria-label')) || '';
   };
   const optLabel = e => txt(byId(e.id)) || txt(e.closest('label')) || e.getAttribute('aria-label') || e.value || '';
-  const BOX = '.ashby-application-form-field-entry, .application-question, .application-additional';
+  const BOX = '.ashby-application-form-field-entry, .application-question, .application-additional, .question[data-questionid]';
   const boxLabel = e => {
     const box = e.closest(BOX);
     if (!box) return '';
-    return txt(box.querySelector('.ashby-application-form-question-title, .application-label')) || '';
+    return txt(box.querySelector('.ashby-application-form-question-title, .application-label, .question-label label')) || '';
   };
   const groupLabel = els => {
     const first = els[0];
@@ -64,7 +64,7 @@ SCAN_JS = r"""
   const isReq = (e, label) => {
     if (e.required || e.getAttribute('aria-required') === 'true' || /[*✱]/.test(label)) return true;
     const box = e.closest(BOX);
-    return !!(box && box.querySelector('.ashby-application-form-question-title[class*="required"], label[class*="required"], .required'));
+    return !!(box && box.querySelector('.ashby-application-form-question-title[class*="required"], label[class*="required"], .required, .question-label.required'));
   };
   const out = [];
   const seen = new Set();
@@ -73,7 +73,7 @@ SCAN_JS = r"""
     if (c.disabled || c.closest('header, nav, footer, [class*="captcha"], .g-recaptcha, .h-captcha')) continue;
     if (c.tagName === 'INPUT' && c.closest('.ashby-application-form-input-yesno')) continue;
     const cls = c.getAttribute('class') || '';
-    if (/requiredInput|iti__search|visually-hidden-input/.test(cls) || /captcha/i.test(c.name || '')) continue;
+    if (/requiredInput|iti__search|visually-hidden-input|select2-search/.test(cls) || /captcha/i.test(c.name || '')) continue;
     if (c.matches('.ashby-application-form-input-yesno')) {
       const btns = [...c.querySelectorAll('button')];
       const label = boxLabel(c) || groupLabel(btns);
@@ -116,7 +116,8 @@ SCAN_JS = r"""
     }
     const label = oneLabel(c);
     if (c.tagName === 'SELECT') {
-      out.push({kind: 'select', label, required: isReq(c, label), jh: tag(c), id: c.id || '', name: c.name || '',
+      const s2 = /select2-hidden/.test(cls) ? c.parentElement.querySelector('.select2-selection') : null;
+      out.push({kind: 'select', label, required: isReq(c, label), jh: tag(c), id: c.id || '', name: c.name || '', s2: s2 ? tag(s2) : '',
         value: c.selectedIndex > 0 ? txt(c.options[c.selectedIndex]) : '',
         options: [...c.options].filter(o => o.value !== '' && txt(o)).map(o => ({text: txt(o), jh: ''}))});
       continue;
@@ -130,7 +131,8 @@ SCAN_JS = r"""
       value = v ? txt(v) : value;
     }
     out.push({kind: combo ? 'combo' : (c.tagName === 'TEXTAREA' ? 'textarea' : 'text'), label, required: isReq(c, label),
-      jh: tag(c), id: c.id || '', name: c.name || '', value, options: [], type});
+      jh: tag(c), id: c.id || '', name: c.name || '', value, options: [], type,
+      locked: c.readOnly || c.getAttribute('aria-readonly') === 'true' || c.getAttribute('aria-disabled') === 'true'});
   }
   document.body.dataset.jhn = String(n);
   return out;
@@ -160,6 +162,7 @@ class Report:
     pending: list = field(default_factory=list)     # (question, options, why)
     blockers: list = field(default_factory=list)    # things only the user can decide
     done: set = field(default_factory=set)
+    uploaded: set = field(default_factory=set)
 
     @property
     def ok(self) -> bool:
@@ -176,6 +179,8 @@ class Context:
     company: str = ""
     url: str = ""
     extra_combo: str = ""
+    keep_existing: bool = False   # account sites: what the user's saved profile filled in stays as it is
+    step: int = 0                 # page number on a multi-page form
 
 
 def job_entries(mapping: dict) -> list[dict]:
@@ -258,11 +263,11 @@ def fill(page, ctx: Context, report: Report | None = None, only_files: bool = Fa
     """One pass over the page. Call again after it, since answers can reveal new questions.
     `only_files` uploads the resume and cover letter and leaves every other question for later."""
     rep = report or Report()
-    answered_labels = {bank.norm(q) for q, _ in rep.entered}
+    answered_labels = set()
     for q in scan(page, ctx.extra_combo):
         if only_files and q["kind"] != "file":
             continue
-        key = (q["kind"], bank.norm(q["label"]), q["id"] or q["name"])
+        key = (ctx.step, q["kind"], bank.norm(q["label"]), q["id"] or q["name"])
         if key in rep.done:
             continue
         rep.done.add(key)
@@ -280,7 +285,10 @@ def fill(page, ctx: Context, report: Report | None = None, only_files: bool = Fa
             if kind == "file":
                 which = _file_kind(q)
                 path = {"resume": ctx.resume, "cover": ctx.cover}.get(which, "")
+                if path and which in rep.uploaded:
+                    continue
                 if path:
+                    rep.uploaded.add(which)
                     _el(page, q["jh"]).set_input_files(path)
                     page.wait_for_timeout(2500)
                     rep.entered.append(("Resume" if which == "resume" else "Cover letter", path.replace("\\", "/").split("/")[-1]))
@@ -289,6 +297,12 @@ def fill(page, ctx: Context, report: Report | None = None, only_files: bool = Fa
                 continue
             if kind in ("text", "textarea") and bank.norm(label) in answered_labels:
                 continue        # the free-text twin of a choice already answered ("Other: ...")
+            current = q.get("value") or ", ".join(o["text"] for o in q.get("options") or [] if o.get("on"))
+            if current and (q.get("locked") or ctx.keep_existing):
+                rep.entered.append((label, current + "  (already on the form)"))
+                continue
+            if q.get("locked"):
+                continue
             if kind in ("text", "textarea"):
                 val, _ = _resolve(q, ctx)
                 if val is None:
@@ -307,7 +321,23 @@ def fill(page, ctx: Context, report: Report | None = None, only_files: bool = Fa
                     else:
                         missing()
                     continue
-                _el(page, q["jh"]).select_option(label=val[0])
+                if q.get("s2"):           # a styled dropdown drawn over a hidden list: use it the way a person does
+                    opt = page.locator("li.select2-results__option").filter(
+                        has_text=re.compile(r"^\s*" + re.escape(val[0]) + r"\s*$")).first
+                    for _ in range(3):        # the first click after a page change sometimes only focuses it
+                        _el(page, q["s2"]).click()
+                        page.wait_for_timeout(500)
+                        if opt.count() and opt.is_visible():
+                            break
+                    if not (opt.count() and opt.is_visible()):      # a long list with a search box: type to find it
+                        box = page.locator("input.select2-search__field:visible").first
+                        if box.count():
+                            box.fill(val[0])
+                            page.wait_for_timeout(1800)
+                    opt.click(timeout=8000)
+                    page.wait_for_timeout(300)
+                else:
+                    _el(page, q["jh"]).select_option(label=val[0])
                 rep.entered.append((label, val[0]))
             elif kind == "combo":
                 chosen, seen = _combo(page, q, ctx)

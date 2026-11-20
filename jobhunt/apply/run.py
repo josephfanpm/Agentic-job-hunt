@@ -131,6 +131,18 @@ def _fill_all(page, ctx: forms.Context, rep: forms.Report) -> forms.Report:
     return rep
 
 
+def _past_signin(page, site: dict, company: str, wait: int) -> bool:
+    """If a sign-in page is showing, wait for the user to get through it. Never touches it."""
+    pattern = site.get("signin_url", "")
+    if not human.signin_showing(page, pattern):
+        return True
+    ok = human.wait_for_user(page, f"{company}: sign in to the careers site in the browser window. "
+                             "It stays signed in for next time.",
+                             lambda pg: not human.signin_showing(pg, pattern), timeout=wait)
+    page.wait_for_timeout(4000)
+    return ok and not human.signin_showing(page, pattern)
+
+
 def _after_submit(page, cfg: dict, site: dict, company: str, wait: int) -> tuple[str, str]:
     """Watch the page after Submit. Returns (status, detail)."""
     sent_at = time.time() - 30
@@ -199,12 +211,13 @@ def apply(url: str, company: str, role: str = "", resume: str = "", cover: str =
     if job_answers is None and saved.exists():
         job_answers = json.loads(saved.read_text(encoding="utf-8"))
     ctx = forms.Context(entries=bank.load(), job=forms.job_entries(job_answers or {}), resume=resume, cover=cover,
-                        country=country, company=company, url=url, extra_combo=site.get("extra_combo", ""))
+                        country=country, company=company, url=url, extra_combo=site.get("extra_combo", ""),
+                        keep_existing=bool(site.get("steps")))
     wait = wait or int(cfg["auto_apply"].get("wait_for_user_minutes", 15)) * 60
     result = {"company": company, "role": role, "url": url, "site": name, "folder": str(folder)}
     with sync_playwright() as p:
-        ctxb = open_browser(p, cfg)
-        page = ctxb.pages[0] if ctxb.pages else ctxb.new_page()
+        sess = open_browser(p, cfg)
+        page = sess.page
         try:
             page.goto(form_url(url, site), wait_until="domcontentloaded", timeout=90000)
             page.wait_for_timeout(4000)
@@ -213,16 +226,15 @@ def apply(url: str, company: str, role: str = "", resume: str = "", cover: str =
                 if link.count():
                     link.click()
                     page.wait_for_timeout(5000)
-            if site.get("signin_url") and re.search(site["signin_url"], page.url):
-                ok = human.wait_for_user(page, f"{company}: sign in to the careers site in the browser window. "
-                                         "It stays signed in for next time.",
-                                         lambda pg: not re.search(site["signin_url"], pg.url), timeout=wait)
-                if not ok:
-                    result.update(status="waiting", detail="sign-in was not completed")
-                    return result
-                page.wait_for_timeout(4000)
+            if not _past_signin(page, site, company, wait):
+                result.update(status="waiting", detail="sign-in was not completed")
+                return result
             rep = forms.Report()
             for step in range(12 if site.get("steps") else 1):
+                if step and not _past_signin(page, site, company, wait):
+                    rep.blockers.append("Sign-in was not completed.")
+                    break
+                ctx.step = step
                 rep_before = len(rep.done)
                 forms.fill(page, ctx, rep, only_files=True)       # resume first: some sites read it and fill fields
                 if len(rep.done) > rep_before:
@@ -268,26 +280,23 @@ def apply(url: str, company: str, role: str = "", resume: str = "", cover: str =
                           pending=[(q, o, w) for q, o, w in rep.pending], blockers=rep.blockers)
             return result
         finally:
-            ctxb.close()
+            if result.get("status") in ("submitted", "ready", None):
+                sess.close()        # otherwise the tab stays open so the user can see what it needs
 
 
-def sign_in(url: str, cfg: dict | None = None, minutes: int = 15) -> None:
-    """Open a site in the kept browser profile so the user can sign in once."""
+def sign_in(url: str, cfg: dict | None = None) -> bool:
+    """Open a site in the kept Chrome window so the user can sign in. The window stays open
+    afterwards, so the sign-in lasts for later runs."""
     from playwright.sync_api import sync_playwright
 
+    from .browser import start_window
+
     cfg = cfg or config.load()
+    if not start_window(cfg, url):
+        return False
     with sync_playwright() as p:
-        ctxb = open_browser(p, cfg)
-        page = ctxb.pages[0] if ctxb.pages else ctxb.new_page()
-        page.goto(url, wait_until="domcontentloaded", timeout=90000)
-        print(f"Sign in in the browser window, then close it. It closes by itself after {minutes} minutes.", flush=True)
-        end = time.time() + minutes * 60
-        try:
-            while time.time() < end and ctxb.pages:
-                ctxb.pages[0].wait_for_timeout(1500)
-        except Exception:
-            pass
-        try:
-            ctxb.close()
-        except Exception:
-            pass
+        sess = open_browser(p, cfg)
+        if url not in [pg.url for pg in sess.context.pages]:
+            sess.page.goto(url, wait_until="domcontentloaded", timeout=90000)
+            sess.page.bring_to_front()
+    return True

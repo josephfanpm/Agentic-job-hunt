@@ -115,7 +115,10 @@ def cmd_signin(args) -> int:
         print(miss)
         return 2
     from . import run
-    run.sign_in(args.url)
+    if not run.sign_in(args.url):
+        print("Chrome was not found. Install Google Chrome, or sign in during the apply run itself.")
+        return 1
+    print("Sign in in the Chrome window that opened, and leave that window open: later runs use it, already signed in.")
     return 0
 
 

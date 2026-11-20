@@ -31,6 +31,25 @@ def captcha_showing(page) -> bool:
         return False
 
 
+SIGNIN_TEXT = ("verify your email", "enter your password", "log in or create account", "sign in to continue",
+               "sign in to your account", "create an account to apply", "enter verification code")
+
+
+def signin_showing(page, url_pattern: str = "") -> bool:
+    """True on a sign-in, password or account-verification page. Those belong to the user:
+    the tool never types into them or presses their buttons."""
+    import re
+    try:
+        if url_pattern and re.search(url_pattern, page.url):
+            return True
+        if page.locator('input[type="password"]:visible').count():
+            return True
+        body = (page.inner_text("body", timeout=3000) or "").lower()
+        return len(body) < 2500 and any(t in body for t in SIGNIN_TEXT)
+    except Exception:
+        return False
+
+
 def _q(s: str) -> str:
     return s.replace("'", "").replace('"', "")[:180]
 
