@@ -122,3 +122,24 @@ def common_terms(postings: list[tuple[str, str]], min_postings: int = 3, top: in
             seen[key[0]] += 1
             shown.setdefault(key[0], key[1])
     return sorted(((shown[k], n) for k, n in seen.items() if n >= min_postings), key=lambda x: (-x[1], x[0]))
+
+
+def _key(term: str) -> str:
+    return " ".join(_stem(w) for w in term.split())
+
+
+def terms_in(terms: list[str], text: str) -> list[str]:
+    """The terms from the list that appear in the text (same stemming as `coverage`)."""
+    hay = " " + " ".join(_stem(t) for t in _tokens(text)) + " "
+    return [t for t in terms if " " + _key(t) + " " in hay]
+
+
+def content_stems(text: str) -> set[str]:
+    """A text's meaningful words, stemmed, for comparing two bullets."""
+    return {_stem(t) for t in _tokens(text) if t.lower() not in STOP and len(t) > 2}
+
+
+def gaps(common: list[tuple[str, int]], resume: str) -> list[tuple[str, int]]:
+    """Shared terms (from `common_terms`) that the resume doesn't use, most-shared first."""
+    have = set(terms_in([t for t, _ in common], resume))
+    return [(t, n) for t, n in common if t not in have]

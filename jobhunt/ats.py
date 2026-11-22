@@ -248,6 +248,56 @@ def check(path: str | Path, max_pages: int = 1, jd_text: str | None = None,
     return rep
 
 
+def cut_order(path: str | Path, max_pages: int = 1, jd_text: str | None = None,
+              letter_text: str | None = None, company: str = "") -> dict:
+    """Which bullets to cut first when a resume runs long, weakest first.
+
+    Each bullet is scored on what it does for this job: how many of the
+    posting's top terms it uses, whether it carries a number, whether another
+    bullet already says much the same, and whether the cover letter leans on
+    it. The lowest score is the first to cut. A suggestion, not a verdict: the
+    person may know a bullet matters more than its words show.
+    """
+    import pymupdf
+    from jobhunt import keywords
+    items: list[str] = []
+    spill = 0
+    with pymupdf.open(path) as doc:
+        for pno, page in enumerate(doc, start=1):
+            rows = _lines(page)
+            items += bullets(rows)
+            if pno > max_pages:
+                spill += len(rows)
+    terms = keywords.extract_terms(jd_text, top=30, ignore=(company,) if company else ()) if jd_text else []
+    letter = keywords.content_stems(letter_text) if letter_text else set()
+    letter_nums = set(re.findall(r"\d[\d.,]*%?", _YEAR.sub("", letter_text or "")))
+    stems = [keywords.content_stems(b) for b in items]
+    hits = [keywords.terms_in(terms, b) for b in items]
+    top = max((len(h) for h in hits), default=0) or 1
+    scored = []
+    for i, b in enumerate(items):
+        overlap, twin = 0.0, ""
+        for j, other in enumerate(stems):
+            if j != i and stems[i] and other:
+                jac = len(stems[i] & other) / len(stems[i] | other)
+                if jac > overlap:
+                    overlap, twin = jac, items[j]
+        nums = set(re.findall(r"\d[\d.,]*%?", _YEAR.sub("", b)))
+        in_letter = bool(letter) and (bool(nums & letter_nums) or len(stems[i] & letter) >= 4)
+        num = has_number(b)
+        score = 3 * len(hits[i]) / top + (1 if num else 0) + (1 - overlap) + (1 if in_letter else 0)
+        why = [f"{len(hits[i])} posting term{'s' if len(hits[i]) != 1 else ''}" if terms else "no posting given"]
+        if not num:
+            why.append("no number")
+        if overlap >= 0.3:
+            why.append(f"overlaps '{_short(twin, 5)}'")
+        if in_letter:
+            why.append("the cover letter uses it")
+        scored.append((round(score, 1), b, why))
+    scored.sort(key=lambda x: x[0])
+    return {"spill_lines": spill, "bullets": scored, "terms": bool(terms)}
+
+
 def _short(text: str, words: int = 6) -> str:
     parts = text.split()
     return " ".join(parts[:words]) + ("…" if len(parts) > words else "")

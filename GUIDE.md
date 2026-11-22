@@ -125,7 +125,9 @@ python -m jobhunt check private/resume.pdf
 
 The check reads the PDF the way an applicant tracking system does. It fails on things that break parsing: more than one page, fused letters ("staffing" read as "sta?ing"), no email in the text, a scanned image with no text. It warns about missing section headings, multi-column layouts and images. It also reads your bullets the way a recruiter skims them, and warns when fewer than 80% carry a number, when a bullet opens with a duty ("Responsible for"), when it uses filler ("team player"), or when a tool on your list never shows up in a bullet. `--bullets` lists each bullet with what it's missing. The README's [Resume rules, and why](README.md#resume-rules-and-why) explains each rule.
 
-Building the base resume for a role? Once the scan has saved five or more job descriptions, run `python -m jobhunt terms private/jds/*.txt` to see the terms that three or more of them share.
+Building the base resume for a role? Once the scan has saved five or more job descriptions, run `python -m jobhunt terms private/jds/*.txt` to see the terms that three or more of them share. Add `--gaps private/resume.pdf` to list only the ones your resume doesn't use, and ask your agent to run [prompts/learning-plan.md](prompts/learning-plan.md) to sort them into "have it, add it" and "real gap, here's a plan".
+
+If a tailored resume runs past one page, `python -m jobhunt check resume.pdf --cuts --jd <jd file>` ranks the bullets that do least for that job, so you know what to shorten or cut first.
 
 ### Step 6. Mine your LinkedIn network
 
@@ -213,7 +215,8 @@ The mock interview asks one question at a time from the real job description and
   > Draft this week's 5 network messages following prompts/outreach.md
 - **Channels:** `python -m jobhunt stats` shows interviews per channel. With fewer than about 20 applications it's too early to compare; after that, put your time where the screens come from.
 - **Statuses:** update the Applied rows that are stuck, and mark "No response" after 3 weeks of silence.
-- **Deeper review:** [prompts/review.md](prompts/review.md).
+- **Deeper review:** [prompts/review.md](prompts/review.md). Once a month, add [prompts/learning-plan.md](prompts/learning-plan.md).
+- **Updates:** `python -m jobhunt update` shows what's new in the main project, which changes are worth reading, and which files you've edited that the update also changes. It never changes anything itself; take the update with the `git merge` line it prints.
 
 ---
 

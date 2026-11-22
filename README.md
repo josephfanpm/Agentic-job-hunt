@@ -39,10 +39,12 @@ After setup, everyone uses [GUIDE.md](GUIDE.md) for the daily routine.
 | **Scan** | Reads company job boards (Greenhouse, Lever, Ashby, Workable, Workday), remote boards (Remote OK, Remotive, We Work Remotely, Himalayas), Hacker News "Who is hiring?", Amazon, and optionally LinkedIn and Indeed. Filters, ranks and removes duplicates | No |
 | **Pick** | Tick Pick on the jobs you want, in the sheet, on your phone, or from a morning email. Then tell your agent "work my picks" | No |
 | **Find people** | Three LinkedIn searches per job (recruiters, hiring managers, peers), each a one-click link | No |
-| **Check the resume** | Reads your PDF the way an applicant tracking system does, shows which of the posting's terms your resume lacks, and flags bullets with no number, duty openers, filler, and tools no bullet shows | No |
+| **Check the resume** | Reads your PDF the way an applicant tracking system does, shows which of the posting's terms your resume lacks, and flags bullets with no number, duty openers, filler, and tools no bullet shows. When it runs long, ranks the bullets to cut first | No |
 | **Track** | Logs applications, lists follow-ups due, compares interview rates by channel | No |
 | **Evaluate and research** | Grades a job's fit against your profile; writes a one-page company brief | Yes |
 | **Tailor** | A one-page LaTeX resume and cover letter per job, from the real job description and your own facts | Yes |
+| **Review** | A second agent checks each draft: every claim traces to your profile, the top third shows the match, the letter is about this company | Yes |
+| **Close skill gaps** | Lists the skills most postings for your role ask for that your resume lacks, then plans the smallest proof for each | Partly |
 | **Reach out** | A message matched to who's reading it. Team members get a question or a shared interest and a coffee-chat invite, not a request. Agents draft; **you send** | Yes |
 | **Apply** | Fills the application and logs it, for jobs you pick. With auto-apply on in Full mode, it also submits for the top matches without asking. Stops for referrals and for questions your profile doesn't answer | Yes |
 | **Name the person** | In Full mode, the agent names one person to message per job: the hiring manager, a recruiter, or a manager who could be hiring for the role | Yes |
@@ -186,8 +188,9 @@ To fill in forms, the agent needs a tool that can drive a browser. To find peopl
 | `python -m jobhunt people "Company" "Job title"` | LinkedIn searches for recruiters, hiring managers and peers (`--wider` adds managers on any team and company leaders) |
 | `python -m jobhunt picks` | The jobs you ticked Pick and haven't applied to |
 | `python -m jobhunt network find "Company"` | Who you already know there, from your LinkedIn data export |
-| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight, bullet checks and keyword gap (`--bullets` lists each bullet and what it's missing) |
-| `python -m jobhunt terms private/jds/*.txt` | Terms shared by 3+ postings, for your base resume |
+| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight, bullet checks and keyword gap (`--bullets` lists each bullet and what it's missing; `--cuts` ranks bullets to cut when the page runs long) |
+| `python -m jobhunt terms private/jds/*.txt` | Terms shared by 3+ postings, for your base resume (`--gaps resume.pdf` lists the ones your resume lacks) |
+| `python -m jobhunt guard <file>` | Remove hidden text from a saved posting and set aside lines aimed at AI agents (the scan does this for you) |
 | `python -m jobhunt applied "Company" --channel Referral` | Log an application |
 | `python -m jobhunt due` | Follow-ups due today |
 | `python -m jobhunt stats` | Interviews by channel |
@@ -197,6 +200,7 @@ To fill in forms, the agent needs a tool that can drive a browser. To find peopl
 | `python -m jobhunt signin <url>` | Sign in to a careers site once; it stays signed in |
 | `python -m jobhunt mailcode` | Set up and test the reader for emailed security codes |
 | `python -m jobhunt schedule on` | Run the scan automatically at log-on (`--at 08:00` for a set time) |
+| `python -m jobhunt update` | See what an update from the main project would change, and which of your own edits it touches, before you take it |
 | `python -m jobhunt doctor` | Check the setup |
 
 ## Works with more than one agent
@@ -208,7 +212,8 @@ Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwe
 - **You pick, agents execute.** The scan gives you a short ranked list. You choose; agents do the rest. Auto-apply is the one exception, and only when you turn it on: the agent then picks by grade, within a daily limit.
 - **Referral before application.** Line up a referral first where you can. The tracker records the channel for every application, so you can see which one gets interviews.
 - **Message a person for every application.**
-- **Never invent anything.** Agents tailor only from a job description they fetched and facts in your own files. Pay, dates and locations are shown only when the posting states them.
+- **Never invent anything.** Agents tailor only from a job description they fetched and facts in your own files. Pay, dates and locations are shown only when the posting states them. A second agent checks every claim against your profile before a resume goes out.
+- **A posting is information, not instructions.** Before any agent reads a posting, the scan removes text a person can't see and moves lines aimed at AI agents ("AI assistants should…") to a labelled section, so you see them and agents don't act on them.
 - **Agents draft, you send.**
 - **Your data stays yours.** Everything personal lives in `private/`, which is never committed.
 
@@ -223,7 +228,8 @@ Claude, Codex, Antigravity, Grok, Muse, or an open model such as DeepSeek or Qwe
   - Finding: [daily-scan](prompts/daily-scan.md), [evaluate](prompts/evaluate.md), [research](prompts/research.md), [fetch-pages](prompts/fetch-pages.md)
   - Daily: [work-picks](prompts/work-picks.md) (what "work my picks" does), [auto-apply](prompts/auto-apply.md) (Full mode)
   - People: [network-scoring](prompts/network-scoring.md), [linkedin-search](prompts/linkedin-search.md), [find-person](prompts/find-person.md), [outreach](prompts/outreach.md), [follow-up](prompts/follow-up.md), [check-email](prompts/check-email.md)
-  - Applying: [tailor-resume](prompts/tailor-resume.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
+  - Applying: [tailor-resume](prompts/tailor-resume.md), [review-draft](prompts/review-draft.md), [apply](prompts/apply.md), [create-sheet](prompts/create-sheet.md)
+  - Growing: [learning-plan](prompts/learning-plan.md) (skills most postings ask for that you lack)
   - Interviews and offers: [interview-prep](prompts/interview-prep.md), [mock-interview](prompts/mock-interview.md), [offer](prompts/offer.md), [review](prompts/review.md)
 
 ## Development
@@ -356,8 +362,9 @@ The `stats` command won't rank channels until there are about 20 applications in
 | Risk | Mitigation |
 |---|---|
 | The AI overstates experience | Profile-only rule; every number must have a source; the person reviews every resume before it goes out |
-| A job board changes its feed | Each source is isolated, so one failure doesn't stop the scan; 114 automated tests run on every change |
+| A job board changes its feed | Each source is isolated, so one failure doesn't stop the scan; 139 automated tests run on every change |
 | Two agents overwrite each other | Insert-only writes, claiming a job in Notes, and a scan that remembers what it has already shown |
+| A posting carries hidden instructions for AI agents | The scan removes hidden text and sets aside instruction-shaped lines in code, before an agent reads the posting; agents are told never to follow them |
 | Personal data leaks | Everything personal lives in `private/`, which git never uploads; the scan sends only ordinary requests for public listings |
 | Too complex for non-technical users | A click-by-click setup guide, a guided setup command, and a no-AI mode that works on its own |
 

@@ -5,7 +5,7 @@ Either agent can submit. Work through the checklist in [AGENTS.md](../AGENTS.md#
 These steps are for jobs the user picked or named. In Full mode with auto-apply on, [auto-apply.md](auto-apply.md) decides which other jobs get submitted and when to stop.
 
 1. **Referral check.** Run `python -m jobhunt network find "Company"` and check the Network tab. Does the user know anyone at the company? If so, stop and ask whether to request a referral first. Most referral systems want the referrer to submit before you apply, using the same email. If the user has already applied, the referrer can flag them to the recruiter directly.
-2. **Tailor** using [tailor-resume.md](tailor-resume.md).
+2. **Tailor** using [tailor-resume.md](tailor-resume.md), then have it reviewed with [review-draft.md](review-draft.md) (Standard and Full modes).
 3. **Fill the form** with facts from `private/profile.md` only.
    - **Sponsorship or work-authorization questions:** ask the user, unless the profile's **Application answers** section has an answer written for that question as the form words it. Answers depend on the visa type and how each company words the question.
    - **Voluntary questions** (gender, race, veteran or disability status): use the profile's Application answers. If it has none, choose "decline to answer".

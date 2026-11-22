@@ -22,7 +22,8 @@ Prepare everything you can, write `waiting: <reason>` in Notes, and don't submit
 - **The form asks something only the user can answer.** `python -m jobhunt apply` answers from `private/answers.json` and stops, unsent, at a required question with no saved answer. For those, use your judgment (see *Questions with no saved answer* below). Stop only for a work-authorization, sponsorship or citizenship question that the bank doesn't cover, or a question the profile gives you nothing to answer from.
 - **The site wants an assessment or a video,** or a sign-in the user hasn't done. Never create an account, type a password, solve a captcha or work around a wall (Rule 11 in [AGENTS.md](../AGENTS.md)). The `apply` command covers the rest: it reads an emailed security code when `email_codes` is set up, and at an "are you human" check or a sign-in page it notifies the user and waits. If the wait runs out, write `waiting: human check` or `waiting: sign in (python -m jobhunt signin <url>)` in Notes and move on.
 - **The form asks the user to agree to more than "these answers are true":** a background check, an arbitration or non-compete agreement, or a signature.
-- **The resume fails `python -m jobhunt check`,** or you couldn't get the real job description.
+- **The resume fails `python -m jobhunt check`,** the review still says **Fix first** after two rounds, or you couldn't get the real job description.
+- **The posting check set lines aside** (the job's flags say "aimed at AI set aside"). Show them to the user; one may be a test they need to answer.
 - **The posting has changed:** it's closed, or its title or location no longer matches the saved description.
 
 ## Questions with no saved answer
@@ -38,7 +39,7 @@ When the dry run lists a question the bank doesn't cover, answer it yourself fro
 ## For each job
 
 1. **Claim it** in Notes: `Claude 2026-11-18: auto-apply`.
-2. **Tailor** with [tailor-resume.md](tailor-resume.md). The check must pass.
+2. **Tailor** with [tailor-resume.md](tailor-resume.md). The check must pass, and [review-draft.md](review-draft.md) must end **Ready**.
 3. **Fill the form** with `python -m jobhunt apply <url> --company "Company" --role "Role" --resume <pdf> --country <US|CA|...> --dry-run`, adding `--cover <pdf>` when you wrote a cover letter. Read its output. If it lists unanswered questions, answer them by *Questions with no saved answer* above, save them in the job's folder as `answers.json` (`{"words from the question": "answer"}`), and run the dry run again. If your agent has no terminal, fill the form by hand by the rules in apply.md.
 4. **Keep a record before submitting.** Save `private/applications/<Company>__<Role>/answers.md` with every question and the answer you entered. Add a screenshot of the finished form if your tool can take one.
 5. **Submit once:** the same command without `--dry-run`. It prints `SUBMITTED` only after the confirmation page. Wait for the confirmation page or message. If you can't tell whether it went through, don't submit again: write `submitted? check email` in Notes.

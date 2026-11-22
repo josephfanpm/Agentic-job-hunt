@@ -16,6 +16,7 @@ The setting lives in `private/config.json` as `"mode"`. Agents read it and follo
 | LinkedIn searches | Script | Script | Script |
 | Keyword gap and resume check | Script | Script | Script |
 | Tailored resume and cover letter | Only for jobs you pick | Only for jobs you pick | Prepared ahead for the top matches |
+| A second agent reviews each draft | Only when you ask | Yes | Yes |
 | Submitting the application | The agent, for jobs you pick | The agent, for jobs you pick | You, or the agent for the top matches if you turn on auto-apply |
 | Finding the person to message | You, from the search links | You, from the search links | The agent names one person per job |
 | Outreach messages | Only when you ask | One draft per job you pick | Drafted for the top matches. You send them |
@@ -32,7 +33,10 @@ These commands make no AI calls in any mode:
 | `python -m jobhunt people "Company" "Title"` | Three LinkedIn searches with links (`--wider` adds two fallback searches) |
 | `python -m jobhunt picks` | Lists the jobs ticked Pick and not yet applied |
 | `python -m jobhunt network build <folder>` / `network find "Company"` | Indexes your LinkedIn export; lists who you know at a company |
-| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap |
+| `python -m jobhunt check resume.pdf --jd job.txt` | Resume pre-flight and keyword gap (`--cuts` ranks bullets to cut when it runs long) |
+| `python -m jobhunt terms private/jds/*.txt --gaps resume.pdf` | Terms most postings share that the resume doesn't use |
+| `python -m jobhunt guard <file>` | Removes hidden text from a saved posting and sets aside lines aimed at AI |
+| `python -m jobhunt update` | Shows what an update from the main project would change, before you take it |
 | `python -m jobhunt boards add "Company"` | Finds a company's job board |
 | `python -m jobhunt applied / due / stats` | Logs applications, lists follow-ups, compares channels (CSV tracker) |
 | `python -m jobhunt apply <url> --company "X" --resume file.pdf` | Fills and submits one application from your saved answers |
@@ -63,16 +67,16 @@ Lean mode with the CSV tracker or the sheet receiver, scheduled with `python -m 
 
 **Standard**
 - After the scan, read the result file and flag at most three jobs that the rules ranked high but look like poor fits, with a one-line reason each.
-- For each job the user picks: tailor, check, draft one message, log it.
+- For each job the user picks: tailor, check, review with [prompts/review-draft.md](prompts/review-draft.md), draft one message, log it.
 - Draft follow-up nudges when they come due.
 
 **Full**
 - After the scan, run [prompts/evaluate.md](prompts/evaluate.md) on every new job and write the verdict in the Notes column.
-- For jobs graded A or B, prepare the tailored resume, cover letter and one outreach draft ahead of time.
+- For jobs graded A or B, prepare the tailored resume, cover letter and one outreach draft ahead of time. Have each draft reviewed with [prompts/review-draft.md](prompts/review-draft.md).
 - Name one person to message for each of those jobs, following [prompts/find-person.md](prompts/find-person.md). If no hiring manager or recruiter turns up, use its fallback: a manager in the same function who could be hiring for the role.
 - **Auto-apply off (the default):** do not submit. The user still picks what goes out.
 - **Auto-apply on:** submit those applications yourself, following [prompts/auto-apply.md](prompts/auto-apply.md). Never send the messages.
-- Once a week, run [prompts/review.md](prompts/review.md).
+- Once a week, run [prompts/review.md](prompts/review.md). Once a month, add [prompts/learning-plan.md](prompts/learning-plan.md).
 
 ## Auto-apply (Full mode only)
 

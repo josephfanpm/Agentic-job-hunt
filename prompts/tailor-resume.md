@@ -49,9 +49,15 @@ The check reads the PDF the way an applicant tracking system does. It **fails** 
 
 It **warns** about missing section headings, multi-column layouts and images, and about the bullets: fewer than 80% with a number, openers that describe a duty, filler, and listed tools no bullet shows. With `--jd`, it also says which of the posting's terms sit in the top third of the page. `--bullets` lists every bullet with what it's missing. Warnings are judgment calls: fix the ones you can fix with true facts, and leave the rest.
 
+**Runs past one page?** Run `python -m jobhunt check resume.pdf --cuts --jd <jd file>` (add `--cover letter.pdf` once the letter exists). It ranks every bullet by what it does for this job: the posting's terms it uses, whether it has a number, whether another bullet already says much the same, and whether the cover letter relies on it. Shorten the bullets at the top of the list first, then cut them, until the page fits. Keep the top third strong even if a bullet there scores low; say why if you keep one.
+
 ## Cover letter
 
 Write one only if the form accepts it. Keep it to three short paragraphs: why this team (one specific detail), two results that match the job, and a close. Check it with `python -m jobhunt check letter.pdf --letter`.
+
+## Review
+
+In Standard and Full modes, have the draft reviewed with [review-draft.md](review-draft.md) before it goes anywhere: a fresh reader checks that every claim traces to the profile, that the top third shows the match, and that the letter is about this company. Apply the true fixes and run the check again.
 
 ## Save
 

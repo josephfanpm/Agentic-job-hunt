@@ -12,9 +12,9 @@ from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 
-from jobhunt import geo, net, sources
+from jobhunt import geo, guard, net, sources
 from jobhunt.models import Job
-from jobhunt.text import days_ago, drop_boilerplate, has_phrase, norm, norm_title, parse_pay, strip_html
+from jobhunt.text import days_ago, drop_boilerplate, has_phrase, norm, norm_title, parse_pay
 
 # When the same role shows up twice, keep the copy closest to the employer.
 _SOURCE_RANK = ["greenhouse", "lever", "ashby", "workable", "workday", "amazon", "himalayas",
@@ -101,7 +101,7 @@ def age_ok(job: Job, cfg: dict, today: dt.date) -> str | None:
 
 def role_text(description: str) -> str:
     """The description minus benefits and legal lines, normalized for matching."""
-    return norm(drop_boilerplate(description))
+    return norm(drop_boilerplate(guard.posting_text(description)))
 
 
 # ---- scoring -----------------------------------------------------------------
@@ -185,7 +185,9 @@ def process(raw: list[Job], cfg: dict, seen: dict | None = None,
         if reason:
             drop(reason)
             continue
-        job.description = strip_html(job.description)
+        # Hidden text out, lines aimed at AI agents set aside, before anyone reads it
+        job.description, notes = guard.clean(job.description)
+        job.flags += notes
         reason = location_ok(job, cfg) or age_ok(job, cfg, today)
         if reason:
             drop(reason)
